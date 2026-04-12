@@ -1,0 +1,86 @@
+[package]
+name        = "alcaparra-lang"
+version     = "0.1.0"
+edition     = "2024"
+authors     = ["Marcel Rojas"]
+description = "AlcaparraLang — A scripting language for numerical calculations and dataset-generations"
+license     = "MIT"
+repository  = "https://github.com/mongoose-studio/alcaparra-lang"
+keywords    = ["scripting", "language", "interpreter", "payroll", "dsl"]
+categories  = ["parser-implementations", "mathematics"]
+readme      = "README.md"
+
+[[bin]]
+name = "caper"
+path = "src/main.rs"
+
+[lib]
+name = "alcaparra"
+path = "src/lib.rs"
+
+[dependencies]
+# Números sin errores de punto flotante — NUNCA usar f64 para valores monetarios
+rust_decimal        = { version = "1.33", features = ["serde", "maths"] }
+rust_decimal_macros = "1.33"
+
+# PEG parser para grammar.pest (Fase 2+, cuando se migre del parser manual)
+pest        = "2.7"
+pest_derive = "2.7"
+
+# Serialización
+serde      = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Objetos con orden de inserción preservado (crítico para emit consistente)
+indexmap = { version = "2.0", features = ["serde"] }
+
+# Ergonomía para tipos de error
+thiserror = "1.0"
+
+# std.dates
+chrono = "0.4"
+
+# std.rand
+rand = { version = "0.8", features = ["small_rng"] }
+uuid = { version = "1.8", features = ["v4"] }
+
+# std.crypto
+base64 = "0.22"
+sha1   = "0.10"
+sha2   = "0.10"
+md-5   = "0.10"
+hmac   = "0.12"
+hex    = "0.4"
+
+# std.xml
+quick-xml = { version = "0.36", features = ["serialize"] }
+
+# std.yaml
+serde_yaml = "0.9"
+
+# std.regex
+regex = "1.10"
+
+# Plugin system
+dirs       = "5.0"                              # home_dir() cross-platform
+libloading = { version = "0.8", optional = true }
+
+# REPL
+rustyline = { version = "14.0", optional = true }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[features]
+dynamic_plugins = ["libloading"]
+repl            = ["rustyline"]
+
+# [[bench]]
+# name    = "interpreter"
+# harness = false
+# — uncomment when benches/interpreter.rs is created in Phase 4
+
+[profile.release]
+lto           = true
+codegen-units = 1
+opt-level     = 3

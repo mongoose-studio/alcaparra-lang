@@ -1,0 +1,11 @@
+// SPDX-License-Identifier: MIT
+// AlcaparraLang — deterministic scripting language
+// Copyright (c) 2026-present Marcel Rojas
+
+// Fixture: hello.caper
+// Expected output: { "mensaje": "hola AlcaparraLang", "version": 1 }
+
+let mensaje = "hola " + "AlcaparraLang";
+let version = 1;
+
+emit { mensaje: mensaje, version: version };

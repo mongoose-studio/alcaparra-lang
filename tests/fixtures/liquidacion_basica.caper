@@ -1,0 +1,36 @@
+// SPDX-License-Identifier: MIT
+// AlcaparraLang — deterministic scripting language
+// Copyright (c) 2026-present Marcel Rojas
+
+// Fixture: liquidacion_basica.caper
+// Context: { "SUELDO_BASE": 850000, "AFP_TASA": 0.1157, "FONASA_TASA": 0.07 }
+// Expected output:
+// {
+//   "sueldo_bruto": 850000,
+//   "desc_afp": 98345,
+//   "desc_salud": 59500,
+//   "sueldo_liquido": 692155
+// }
+
+use std.math.{ round };
+
+header {
+    name: "liquidacion_basica";
+    version: "1.0.0";
+    const TASA_CESANTIA = 0.006;
+}
+
+main {
+    let bruto     = SUELDO_BASE ?? 0;
+    let desc_afp  = round(bruto * AFP_TASA, 0);
+    let desc_salud = round(bruto * FONASA_TASA, 0);
+    let desc_ces  = round(bruto * TASA_CESANTIA, 0);
+
+    emit {
+        sueldo_bruto:   bruto,
+        desc_afp:       desc_afp,
+        desc_salud:     desc_salud,
+        desc_cesantia:  desc_ces,
+        sueldo_liquido: bruto - desc_afp - desc_salud - desc_ces
+    };
+}

@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: MIT
+// AlcaparraLang — deterministic scripting language
+// Copyright (c) 2026-present Marcel Rojas
+
+// Fixture: match_guards.caper
+// Context: { "MONTO": 1200000 }
+// Expected output: { "tramo": "medio-alto", "tasa": 0.08 }
+
+let tasa = match MONTO {
+    n if n <= 800_000   => 0.0,
+    n if n <= 1_000_000 => 0.04,
+    n if n <= 2_000_000 => 0.08,
+    _                   => 0.135
+};
+
+let tramo = match MONTO {
+    n if n <= 800_000   => "exento",
+    n if n <= 1_000_000 => "bajo",
+    n if n <= 2_000_000 => "medio-alto",
+    _                   => "alto"
+};
+
+emit { tramo: tramo, tasa: tasa };

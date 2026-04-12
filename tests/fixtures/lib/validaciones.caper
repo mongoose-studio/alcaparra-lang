@@ -1,0 +1,20 @@
+// SPDX-License-Identifier: MIT
+// AlcaparraLang — deterministic scripting language
+// Copyright (c) 2026-present Marcel Rojas
+
+fn validar_positivo(valor, campo) {
+    if valor <= 0 {
+        throw { code: "VALIDACION", message: campo + " debe ser positivo" };
+    }
+    emit valor;
+}
+
+fn validar_rango(valor, min, max) {
+    if valor < min {
+        throw { code: "RANGO", message: "Valor bajo el mínimo" };
+    }
+    if valor > max {
+        throw { code: "RANGO", message: "Valor sobre el máximo" };
+    }
+    emit valor;
+}

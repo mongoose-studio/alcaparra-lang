@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: MIT
+// AlcaparraLang — deterministic scripting language
+// Copyright (c) 2026-present Marcel Rojas
+
+fn doble(x) {
+    emit x * 2;
+}
+
+fn suma(a, b) {
+    emit a + b;
+}
+
+fn porcentaje(base, tasa) {
+    emit base * tasa;
+}
+
+fn es_positivo(n) {
+    emit n > 0;
+}

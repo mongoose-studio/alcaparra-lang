@@ -1,0 +1,19 @@
+// SPDX-License-Identifier: MIT
+// AlcaparraLang — deterministic scripting language
+// Copyright (c) 2026-present Marcel Rojas
+
+// Fixture: match_guards.caper
+// Context: { "MONTO": 1200000 }
+// Expected output: { "tramo": "medio-alto", "tasa": 0.08 }
+
+// ROUND({E001}/30*(SI({A_LIC}>30;30;{A_LIC}));0)
+
+var liq_max = 0;
+if (A_LIC>30) {
+    liq_max = 30;
+} else {
+    liq_max = A_LIC;
+}
+
+let res = E001/30*liq_max;
+emit { a007 : res };
