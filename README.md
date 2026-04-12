@@ -20,14 +20,54 @@ Lejos de ser un lenguaje generalista, **AlcaparraLang** apuesta por hacer bien u
 
 En resumen: **AlcaparraLang** es ese lenguaje chico, ágil y sin pretensiones que simplemente hace la pega… y la hace bien 🇨🇱.
 
+### En 10 segundos
+
+```caper
+let neto = (SUELDO ?? 0) * 0.8;
+emit { neto: neto };
+```
+```bash
+caper run ejemplo.caper --context '{"SUELDO": 1000000}'
+# → { "neto": 800000 }
+```
+
+---
+
+## Índice
+
+- [Casos de uso](#casos-de-uso)
+- [¿Por qué AlcaparraLang?](#por-qué-alcaparralang)
+- [Instalación](#instalación)
+- [CLI](#cli)
+- [Referencia del lenguaje](#referencia-del-lenguaje)
+  - [Estructura de un script](#estructura-de-un-script)
+  - [Variables](#variables)
+  - [Tipos](#tipos)
+  - [Operadores](#operadores)
+  - [Control de flujo](#control-de-flujo)
+  - [match](#match)
+  - [Funciones y closures](#funciones-y-closures)
+  - [Arrays y objetos](#arrays-y-objetos)
+  - [try / catch / throw](#try--catch--throw)
+  - [emit](#emit)
+  - [Imports](#imports)
+- [Librería estándar](#librería-estándar)
+- [Gestión de paquetes](#gestión-de-paquetes)
+- [Integración con Rust](#integración-con-rust)
+- [Configuración](#configuración)
+- [REPL](#repl)
+- [Licencia](#licencia)
+- [Autor](#autor)
+- [Contribuciones](#contribuciones)
+
 ---
 
 ## Casos de uso
 
 **AlcaparraLang** brilla cuando necesitas:
 
-- **Cálculos de negocio** — sueldos, impuestos, comisiones, reglas financieras
-- **Motor de reglas** — lógica configurable sin redeploy
+- **Cálculos de negocio** — sueldos, impuestos, comisiones, reglas financieras 
+- **Motor de reglas** — lógica configurable sin redeploy 
 - **Transformaciones de datos** — inputs → outputs JSON
 - **Prototipos rápidos** — validar lógica sin levantar backend completo
 - **Lógica embebida** — ejecutar scripts seguros dentro de tu app Rust
