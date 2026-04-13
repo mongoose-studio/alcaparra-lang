@@ -125,6 +125,29 @@ fn let_immutable_error() {
     assert!(err.is_err());
 }
 
+#[test]
+fn let_redeclaration_same_scope_is_error() {
+    // Redeclarar una variable con `let` en el mismo scope debe ser error.
+    let err = run_ok("main { let x = 1; let x = 2; emit x; }", ctx(&[]));
+    assert!(
+        err.is_err(),
+        "expected redeclaration error, got {:?}", err
+    );
+    let code = err.unwrap_err().code().to_string();
+    assert_eq!(code, "VARIABLE_REDECLARATION");
+}
+
+#[test]
+fn let_shadowing_nested_scope_is_ok() {
+    // Shadowing en un scope más interno sí está permitido.
+    let v = run(
+        "let x = 1; if true { let x = 99; emit x; } emit x;",
+        ctx(&[]),
+    );
+    // El if con emit interno retorna 99.
+    assert_eq!(v, num(dec!(99)));
+}
+
 // ---------------------------------------------------------------------------
 // Context injection
 // ---------------------------------------------------------------------------

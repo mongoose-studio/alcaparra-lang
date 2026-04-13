@@ -68,10 +68,10 @@ pub enum Instruction {
     // --- Variables ---
     /// Empuja el valor de una variable (Null si no está definida).
     Load(String),
-    /// Pop → define un binding inmutable (`let`).
-    LetBind(String),
-    /// Pop → define un binding mutable (`var`).
-    VarBind(String),
+    /// Pop → define un binding inmutable (`let`). (nombre, línea)
+    LetBind(String, usize),
+    /// Pop → define un binding mutable (`var`). (nombre, línea)
+    VarBind(String, usize),
     /// Pop → define un binding const (header `const`, máxima precedencia).
     ConstBind(String),
     /// Pop → asigna a un binding existente. Verifica mutabilidad.

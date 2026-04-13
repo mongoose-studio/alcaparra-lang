@@ -119,14 +119,14 @@ impl Compiler {
 
     fn compile_stmt(&mut self, stmt: &Stmt) -> Result<(), CaperError> {
         match stmt {
-            Stmt::Let { name, value, .. } => {
+            Stmt::Let { name, value, line } => {
                 self.compile_expr(value)?;
-                self.emit(Instruction::LetBind(name.clone()));
+                self.emit(Instruction::LetBind(name.clone(), *line));
             }
 
-            Stmt::Var { name, value, .. } => {
+            Stmt::Var { name, value, line } => {
                 self.compile_expr(value)?;
-                self.emit(Instruction::VarBind(name.clone()));
+                self.emit(Instruction::VarBind(name.clone(), *line));
             }
 
             Stmt::Assign { target, value, line } => {
@@ -164,14 +164,14 @@ impl Compiler {
                     .continues.push(addr);
             }
 
-            Stmt::FnDecl { name, params, body, .. } => {
+            Stmt::FnDecl { name, params, body, line } => {
                 let chunk_id = self.new_chunk(Some(name.clone()), params.clone());
                 self.compile_fn_body(chunk_id, body)?;
                 self.emit(Instruction::Closure {
                     chunk_id,
                     name: Some(name.clone()),
                 });
-                self.emit(Instruction::LetBind(name.clone()));
+                self.emit(Instruction::LetBind(name.clone(), *line));
             }
 
             Stmt::TryCatch { try_block, error_var, catch_block, .. } => {
@@ -432,7 +432,7 @@ impl Compiler {
 
         // Al entrar al catch: el valor de error está en el stack
         self.emit(Instruction::Enter);
-        self.emit(Instruction::LetBind(error_var.to_string()));
+        self.emit(Instruction::LetBind(error_var.to_string(), 0));
         for s in catch_block { self.compile_stmt(s)?; }
         self.emit(Instruction::Leave);
 
@@ -803,7 +803,7 @@ impl Compiler {
                 MatchPattern::Binding(name) => {
                     // Vincular subject duplicado al nombre (siempre coincide)
                     self.emit(Instruction::Enter);
-                    self.emit(Instruction::LetBind(name.clone()));
+                    self.emit(Instruction::LetBind(name.clone(), 0));
                     if let Some(guard) = &arm.guard {
                         self.compile_expr(guard)?;
                         let jf = self.emit(Instruction::JumpFalse(0));
@@ -906,7 +906,7 @@ impl Compiler {
         self.patch(try_push_addr, Instruction::TryPush(catch_addr));
 
         self.emit(Instruction::Enter);
-        self.emit(Instruction::LetBind(error_var.to_string()));
+        self.emit(Instruction::LetBind(error_var.to_string(), 0));
         for s in catch_block { self.compile_stmt(s)?; }
         self.emit(Instruction::Leave);
 

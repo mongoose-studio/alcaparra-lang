@@ -197,13 +197,13 @@ impl Executor {
                 let v = self.scope.get(&name).cloned().unwrap_or(Value::Null);
                 self.push(v);
             }
-            Instruction::LetBind(name) => {
+            Instruction::LetBind(name, line) => {
                 let v = self.pop();
-                self.scope.define(name, v, Binding::Immutable);
+                self.scope.define(name, v, Binding::Immutable, line)?;
             }
-            Instruction::VarBind(name) => {
+            Instruction::VarBind(name, line) => {
                 let v = self.pop();
-                self.scope.define(name, v, Binding::Mutable);
+                self.scope.define(name, v, Binding::Mutable, line)?;
             }
             Instruction::ConstBind(name) => {
                 let v = self.pop();
@@ -364,9 +364,10 @@ impl Executor {
                             let idx  = *pos;
                             *pos += 1;
                             if let Some(k) = &key {
-                                self.scope.define(k.clone(), Value::Number(Decimal::from(idx as u64)), Binding::Immutable);
+                                // define en frame fresco (Enter antes de IterNext): no puede redeclarar
+                                self.scope.define(k.clone(), Value::Number(Decimal::from(idx as u64)), Binding::Immutable, 0).ok();
                             }
-                            self.scope.define(val, item, Binding::Immutable);
+                            self.scope.define(val, item, Binding::Immutable, 0).ok();
                         }
                     }
                     IterState::Object { entries, pos } => {
@@ -376,9 +377,9 @@ impl Executor {
                             let (k, v) = entries[*pos].clone();
                             *pos += 1;
                             if let Some(kn) = &key {
-                                self.scope.define(kn.clone(), Value::Str(k), Binding::Immutable);
+                                self.scope.define(kn.clone(), Value::Str(k), Binding::Immutable, 0).ok();
                             }
-                            self.scope.define(val, v, Binding::Immutable);
+                            self.scope.define(val, v, Binding::Immutable, 0).ok();
                         }
                     }
                 }
@@ -545,12 +546,12 @@ impl Executor {
                 // Frame para parámetros / cuerpo
                 self.scope.push();
 
-                // Auto-referencia para recursión
+                // Auto-referencia para recursión (define en frame fresco: no puede redeclarar)
                 if let Some(ref name) = fd.name {
-                    self.scope.define(name.clone(), Value::Function(Rc::clone(&fd)), Binding::Immutable);
+                    self.scope.define(name.clone(), Value::Function(Rc::clone(&fd)), Binding::Immutable, 0).ok();
                 }
                 for (param, val) in fd.params.iter().zip(args) {
-                    self.scope.define(param.clone(), val, Binding::Immutable);
+                    self.scope.define(param.clone(), val, Binding::Immutable, 0).ok();
                 }
 
                 let base_scope_depth = self.scope.depth();
@@ -958,20 +959,20 @@ impl Executor {
         match items {
             UseItems::All => {
                 for (name, val) in exported {
-                    self.scope.define(name, rewrite(val), Binding::Immutable);
+                    self.scope.define(name, rewrite(val), Binding::Immutable, 0).ok();
                 }
             }
             UseItems::Single => {
                 if let Some(fn_name) = path.last() {
                     if let Some(val) = exported.get(fn_name).cloned() {
-                        self.scope.define(fn_name.clone(), rewrite(val), Binding::Immutable);
+                        self.scope.define(fn_name.clone(), rewrite(val), Binding::Immutable, 0).ok();
                     }
                 }
             }
             UseItems::Named(names) => {
                 for name in names {
                     if let Some(val) = exported.get(name).cloned() {
-                        self.scope.define(name.clone(), rewrite(val), Binding::Immutable);
+                        self.scope.define(name.clone(), rewrite(val), Binding::Immutable, 0).ok();
                     }
                 }
             }

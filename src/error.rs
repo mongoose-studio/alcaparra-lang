@@ -36,6 +36,9 @@ pub enum CaperError {
     #[error("Cannot reassign immutable variable '{name}' at line {line}")]
     ImmutableReassignment { name: String, line: usize },
 
+    #[error("Variable '{name}' already declared in this scope at line {line} — use 'var' if necesitas reasignar")]
+    VariableRedeclaration { name: String, line: usize },
+
     #[error("Stack overflow: recursion limit ({limit}) exceeded")]
     StackOverflow { limit: usize },
 
@@ -87,7 +90,8 @@ impl CaperError {
             Self::TypeError { .. }             => "TYPE_ERROR",
             Self::DivisionByZero { .. }        => "DIVISION_BY_ZERO",
             Self::ConstReassignment { .. }     => "CONST_REASSIGNMENT",
-            Self::ImmutableReassignment { .. } => "IMMUTABLE_REASSIGNMENT",
+            Self::ImmutableReassignment { .. }  => "IMMUTABLE_REASSIGNMENT",
+            Self::VariableRedeclaration { .. }  => "VARIABLE_REDECLARATION",
             Self::StackOverflow { .. }         => "STACK_OVERFLOW",
             Self::LoopLimitExceeded { .. }     => "LOOP_LIMIT_EXCEEDED",
             Self::EmitMissing                  => "EMIT_MISSING",
@@ -115,7 +119,8 @@ impl CaperError {
             Self::TypeError         { line, .. }    => Some((*line, 0)),
             Self::DivisionByZero    { line }        => Some((*line, 0)),
             Self::ConstReassignment { line, .. }    => Some((*line, 0)),
-            Self::ImmutableReassignment { line, .. }=> Some((*line, 0)),
+            Self::ImmutableReassignment { line, .. } => Some((*line, 0)),
+            Self::VariableRedeclaration { line, .. } => Some((*line, 0)),
             Self::UserThrow         { line, .. }    => Some((*line, 0)),
             _ => None,
         }
