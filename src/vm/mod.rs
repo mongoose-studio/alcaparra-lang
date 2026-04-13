@@ -132,13 +132,13 @@ impl Vm {
 
     fn run_stmt(&mut self, stmt: &Stmt) -> Result<Signal, CaperError> {
         match stmt {
-            Stmt::Let { name, value, .. } => {
+            Stmt::Let { name, value, line } => {
                 let val = self.eval_expr(value)?;
-                self.scope.define(name.clone(), val, Binding::Immutable);
+                self.scope.define(name.clone(), val, Binding::Immutable, *line)?;
             }
-            Stmt::Var { name, value, .. } => {
+            Stmt::Var { name, value, line } => {
                 let val = self.eval_expr(value)?;
-                self.scope.define(name.clone(), val, Binding::Mutable);
+                self.scope.define(name.clone(), val, Binding::Mutable, *line)?;
             }
             Stmt::Assign { target, value, line } => {
                 let val = self.eval_expr(value)?;
@@ -211,9 +211,10 @@ impl Vm {
                                     k.clone(),
                                     Value::Number(Decimal::from(idx as u64)),
                                     Binding::Immutable,
-                                );
+                                    0,
+                                ).ok();
                             }
-                            self.scope.define(val_name.clone(), item, Binding::Immutable);
+                            self.scope.define(val_name.clone(), item, Binding::Immutable, 0).ok();
                             let sig = self.run_stmts(body)?;
                             self.scope.pop();
                             match sig {
@@ -232,9 +233,9 @@ impl Vm {
                             }
                             self.scope.push();
                             if let Some(key_name) = key {
-                                self.scope.define(key_name.clone(), Value::Str(k), Binding::Immutable);
+                                self.scope.define(key_name.clone(), Value::Str(k), Binding::Immutable, 0).ok();
                             }
-                            self.scope.define(val_name.clone(), v, Binding::Immutable);
+                            self.scope.define(val_name.clone(), v, Binding::Immutable, 0).ok();
                             let sig = self.run_stmts(body)?;
                             self.scope.pop();
                             match sig {
@@ -265,7 +266,7 @@ impl Vm {
                     program: None,
                     captured,
                 }));
-                self.scope.define(name.clone(), func, Binding::Immutable);
+                self.scope.define(name.clone(), func, Binding::Immutable, 0).ok();
             }
             Stmt::TryCatch { try_block, error_var, catch_block, .. } => {
                 self.scope.push();
@@ -277,7 +278,7 @@ impl Vm {
                     }
                     Err(e) => {
                         self.scope.push();
-                        self.scope.define(error_var.clone(), error_to_value(&e), Binding::Immutable);
+                        self.scope.define(error_var.clone(), error_to_value(&e), Binding::Immutable, 0).ok();
                         let sig = self.run_stmts(catch_block)?;
                         self.scope.pop();
                         if !matches!(sig, Signal::None) { return Ok(sig); }
@@ -294,7 +295,7 @@ impl Vm {
                     match items {
                         UseItems::All | UseItems::Single => {
                             for (name, val) in fns {
-                                self.scope.define(name, val, Binding::Immutable);
+                                self.scope.define(name, val, Binding::Immutable, 0).ok();
                             }
                         }
                         UseItems::Named(names) => {
@@ -304,7 +305,7 @@ impl Vm {
                                         path: format!("{}.{name}", path.join(".")),
                                     }
                                 })?;
-                                self.scope.define(name.clone(), val, Binding::Immutable);
+                                self.scope.define(name.clone(), val, Binding::Immutable, 0).ok();
                             }
                         }
                     }
@@ -497,7 +498,7 @@ impl Vm {
                     Ok(_) => Ok(Value::Null),
                     Err(e) => {
                         self.scope.push();
-                        self.scope.define(error_var.clone(), error_to_value(&e), Binding::Immutable);
+                        self.scope.define(error_var.clone(), error_to_value(&e), Binding::Immutable, 0).ok();
                         let sig = self.run_stmts(catch_block)?;
                         self.scope.pop();
                         match sig {
@@ -674,11 +675,11 @@ impl Vm {
 
         // Inyectar la función bajo su propio nombre para que las llamadas recursivas la resuelvan
         if let Some(ref name) = fd.name {
-            self.scope.define(name.clone(), Value::Function(Rc::clone(&fd)), Binding::Immutable);
+            self.scope.define(name.clone(), Value::Function(Rc::clone(&fd)), Binding::Immutable, 0).ok();
         }
 
         for (param, val) in fd.params.iter().zip(args) {
-            self.scope.define(param.clone(), val, Binding::Immutable);
+            self.scope.define(param.clone(), val, Binding::Immutable, 0).ok();
         }
 
         self.call_depth += 1;
@@ -1103,7 +1104,7 @@ impl Vm {
             }
             MatchPattern::Binding(name) => {
                 // Vincular el valor al nombre — visible en el guard y el cuerpo
-                self.scope.define(name.clone(), value.clone(), Binding::Immutable);
+                self.scope.define(name.clone(), value.clone(), Binding::Immutable, 0).ok();
                 true
             }
         };

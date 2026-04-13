@@ -55,14 +55,28 @@ impl ScopeStack {
     }
 
     /// Define una nueva variable en el frame actual (tope).
-    pub fn define(&mut self, name: String, value: Value, binding: Binding) {
+    ///
+    /// Retorna error si el nombre ya está declarado en el **mismo** frame (redeclaración).
+    /// El shadowing en scopes anidados (frames distintos) sí está permitido.
+    pub fn define(
+        &mut self,
+        name: String,
+        value: Value,
+        binding: Binding,
+        line: usize,
+    ) -> Result<(), crate::error::CaperError> {
         let frame = self.frames.last_mut().expect("scope stack is empty");
+        if frame.contains_key(&name) {
+            return Err(crate::error::CaperError::VariableRedeclaration { name, line });
+        }
         frame.insert(name, Slot { value, binding });
+        Ok(())
     }
 
     /// Define una constante — colocada en el frame actual con binding Const.
     pub fn define_const(&mut self, name: String, value: Value) {
-        self.define(name, value, Binding::Const);
+        // Las constantes del header se cargan antes del main; la redeclaración se ignora.
+        let _ = self.define(name, value, Binding::Const, 0);
     }
 
     /// Busca una variable, recorriendo desde el frame más interno al más externo.

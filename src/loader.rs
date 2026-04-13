@@ -194,7 +194,7 @@ fn extract_library_fns(compiled: &CompiledProgram) -> HashMap<String, Value> {
     while i < code.len() {
         if let Instruction::Closure { chunk_id, ref name } = code[i] {
             // The next instruction should be LetBind (the fn name binding)
-            if let Some(Instruction::LetBind(bind_name)) = code.get(i + 1) {
+            if let Some(Instruction::LetBind(bind_name, _)) = code.get(i + 1) {
                 let chunk = &compiled.chunks[chunk_id];
                 let fd = FunctionDef {
                     name:     name.clone().or_else(|| Some(bind_name.clone())),
