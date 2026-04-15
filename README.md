@@ -57,6 +57,7 @@ caper run ejemplo.caper --context '{"SUELDO": 1000000}'
 - [Configuración](#configuración)
 - [REPL](#repl)
 - [Licencia](#licencia)
+- [Apoyo](#apoyo)
 - [Autor](#autor)
 - [Contribuciones](#contribuciones)
 
@@ -768,6 +769,12 @@ Este proyecto está licenciado bajo la Licencia MIT - ver el archivo [LICENSE](L
 **Marcel Rojas**  
 [marcelrojas16@gmail.com](mailto:marcelrojas16@gmail.com)  
 __Mongoose Studio__
+
+## Apoyo
+
+Si te gusta este proyecto, puedes apoyarme aquí:
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/mongoosestudio)
 
 ## Contribuciones
 
