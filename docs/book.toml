@@ -1,0 +1,16 @@
+[book]
+title       = "AlcaparraLang"
+authors     = ["Marcel Rojas"]
+language    = "es"
+src         = "src"
+
+[output.html]
+site-url              = "/"
+git-repository-url    = "https://github.com/mongoose-studio/alcaparra-lang"
+edit-url-template     = "https://github.com/mongoose-studio/alcaparra-lang/edit/main/docs/src/{path}"
+additional-css        = ["theme/custom.css"]
+no-section-label      = false
+
+[output.html.search]
+enable  = true
+limit-results = 20
