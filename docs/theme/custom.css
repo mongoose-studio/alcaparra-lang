@@ -1,0 +1,20 @@
+/* AlcaparraLang docs — ajustes visuales mínimos */
+
+:root {
+    --sidebar-width: 260px;
+}
+
+.content code {
+    font-size: 0.88em;
+}
+
+/* Badge de versión en el título del sidebar */
+.sidebar .sidebar-scrollbox::before {
+    content: "v0.1.0";
+    display: block;
+    font-size: 0.72em;
+    color: var(--sidebar-fg);
+    opacity: 0.5;
+    margin-bottom: 1rem;
+    padding-left: 16px;
+}
