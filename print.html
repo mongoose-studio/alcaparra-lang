@@ -1,0 +1,1844 @@
+<!DOCTYPE HTML>
+<html lang="es" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>AlcaparraLang</title>
+        <meta name="robots" content="noindex">
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="theme/custom-e7f62a11.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-f2e1ec26.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-8427f7c4.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">AlcaparraLang</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+                        <a href="https://github.com/mongoose-studio/alcaparra-lang" title="Git repository" aria-label="Git repository">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="alcaparralang"><a class="header" href="#alcaparralang">AlcaparraLang</a></h1>
+<p><strong>AlcaparraLang</strong> es un lenguaje de scripting interpretado, propósito general, con fuerte foco en cálculos numéricos. Su caso de uso principal es la evaluación de fórmulas financieras y de nómina, aunque está diseñado para ser completamente independiente de ese dominio.</p>
+<pre><code class="language-caper">use std.math.{ round, min };
+
+header {
+    name: "liquidacion_standard";
+    version: "1.0.0";
+
+    const TASA_AFP      = 0.1157;
+    const TOPE_IMPONIBLE = 81.0;
+}
+
+main {
+    let bruto     = SUELDO_BASE ?? 0;
+    let desc_afp  = round(bruto * TASA_AFP, 0);
+    let liquido   = bruto - desc_afp;
+
+    emit {
+        bruto:    bruto,
+        desc_afp: desc_afp,
+        liquido:  liquido
+    };
+}
+</code></pre>
+<h2 id="características-principales"><a class="header" href="#características-principales">Características principales</a></h2>
+<ul>
+<li><strong>Números exactos</strong> — usa <code>Decimal</code> de precisión arbitraria internamente. Sin errores de punto flotante en cálculos monetarios.</li>
+<li><strong>Mutabilidad explícita</strong> — <code>let</code> (inmutable), <code>var</code> (mutable), <code>const</code> (constante de script en header).</li>
+<li><strong>Inyección de contexto</strong> — las variables del entorno están disponibles directamente en el scope, sin declaración.</li>
+<li><strong><code>emit</code> como salida</strong> — equivalente a <code>return</code> pero orientado a producir el resultado final del script.</li>
+<li><strong>Determinista</strong> — sin acceso a red, sistema de archivos ni estado global entre ejecuciones.</li>
+<li><strong>Embebible en Rust</strong> — el crate <code>alcaparra</code> expone <code>Interpreter::run()</code> para integración directa.</li>
+</ul>
+<h2 id="instalación-del-cli"><a class="header" href="#instalación-del-cli">Instalación del CLI</a></h2>
+<pre><code class="language-bash">cargo install alcaparra-lang
+</code></pre>
+<pre><code class="language-bash">caper run mi_script.caper --context '{"SUELDO_BASE": 850000}'
+</code></pre>
+<h2 id="licencia"><a class="header" href="#licencia">Licencia</a></h2>
+<p>MIT — <a href="https://github.com/mongoose-studio/alcaparra-lang">github.com/mongoose-studio/alcaparra-lang</a></p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="primeros-pasos"><a class="header" href="#primeros-pasos">Primeros pasos</a></h1>
+<h2 id="instalación"><a class="header" href="#instalación">Instalación</a></h2>
+<pre><code class="language-bash">cargo install alcaparra-lang
+</code></pre>
+<p>Verifica la instalación:</p>
+<pre><code class="language-bash">caper version
+# AlcaparraLang 0.1.0
+</code></pre>
+<h2 id="tu-primer-script"><a class="header" href="#tu-primer-script">Tu primer script</a></h2>
+<p>Crea un archivo <code>hola.caper</code>:</p>
+<pre><code class="language-caper">let nombre = NOMBRE ?? "mundo";
+emit "Hola, " + nombre + "!";
+</code></pre>
+<p>Ejecútalo:</p>
+<pre><code class="language-bash">caper run hola.caper
+# "Hola, mundo!"
+
+caper run hola.caper --context '{"NOMBRE": "Marcel"}'
+# "Hola, Marcel!"
+</code></pre>
+<h2 id="script-con-cálculo"><a class="header" href="#script-con-cálculo">Script con cálculo</a></h2>
+<pre><code class="language-caper">// descuento.caper
+use std.math.round;
+
+let bruto    = SUELDO ?? 0;
+let tasa     = TASA   ?? 0.1157;
+let descuento = round(bruto * tasa, 0);
+
+emit {
+    bruto:     bruto,
+    descuento: descuento,
+    liquido:   bruto - descuento
+};
+</code></pre>
+<pre><code class="language-bash">caper run descuento.caper --context '{"SUELDO": 850000, "TASA": 0.1157}'
+# { "bruto": 850000, "descuento": 98345, "liquido": 751655 }
+</code></pre>
+<h2 id="modo-proyecto"><a class="header" href="#modo-proyecto">Modo proyecto</a></h2>
+<p>Crea un proyecto con <code>.capercfg</code>:</p>
+<pre><code class="language-bash">caper new mi-proyecto
+cd mi-proyecto
+caper run
+</code></pre>
+<p>El archivo <code>.capercfg</code> generado:</p>
+<pre><code class="language-json">{
+    "name":    "mi-proyecto",
+    "version": "1.0.0",
+    "entry":   "main.caper",
+    "context": {}
+}
+</code></pre>
+<h2 id="repl-interactivo"><a class="header" href="#repl-interactivo">REPL interactivo</a></h2>
+<pre><code class="language-bash">caper repl
+</code></pre>
+<pre><code>alcaparra&gt; let x = 10 * 3;
+alcaparra&gt; emit x;
+30
+alcaparra&gt; exit
+</code></pre>
+<h2 id="validar-sintaxis"><a class="header" href="#validar-sintaxis">Validar sintaxis</a></h2>
+<pre><code class="language-bash">caper validate mi_script.caper
+# OK — sin errores
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="estructura-de-un-script"><a class="header" href="#estructura-de-un-script">Estructura de un script</a></h1>
+<p>Un script <code>.caper</code> puede tener dos formas: con <code>header</code> y <code>main</code>, o directo (inline).</p>
+<h2 id="con-header-y-main"><a class="header" href="#con-header-y-main">Con header y main</a></h2>
+<pre><code class="language-caper">header {
+    name:        "liquidacion_standard";
+    version:     "1.2.0";
+    description: "Liquidacion mensual con gratificacion garantizada";
+    author:      "equipo-nomina";
+
+    // Constantes: disponibles en main, nunca sobreescribibles por el contexto
+    const TOPE_IMPONIBLE_UF          = 81.0;
+    const TASA_CESANTIA_INDEFINIDO   = 0.006;
+    const TASA_CESANTIA_PLAZO_FIJO   = 0.011;
+    const TOPE_GRATIFICACION_MENSUAL = 4.75;
+}
+
+main {
+    let bruto = SUELDO_BASE + (BONO_ASISTENCIA ?? 0);
+    emit { resultado: bruto };
+}
+</code></pre>
+<p>El bloque <code>header</code> es opcional pero recomendado para scripts nombrados y versionados.</p>
+<h2 id="inline-sin-header"><a class="header" href="#inline-sin-header">Inline (sin header)</a></h2>
+<pre><code class="language-caper">// El intérprete ejecuta el contenido directamente, como si fuera main
+let sueldo_bruto = SUELDO_BASE + BONO_ASISTENCIA;
+emit { sueldo_bruto: sueldo_bruto };
+</code></pre>
+<p>Útil para scripts cortos o evaluaciones directas desde API.</p>
+<h2 id="constantes-del-header-const"><a class="header" href="#constantes-del-header-const">Constantes del header (<code>const</code>)</a></h2>
+<p>Las constantes declaradas en <code>header</code> tienen <strong>máxima precedencia</strong>:</p>
+<ul>
+<li>No se pueden reasignar desde <code>main</code></li>
+<li>No pueden ser sobreescritas por el contexto inyectado</li>
+<li>Están disponibles en todo el scope de <code>main</code> y en las funciones del script</li>
+</ul>
+<pre><code class="language-caper">header {
+    name: "calculos_legales";
+    version: "2.0.0";
+
+    const UF_TOPE_IMPONIBLE = 81.0;
+}
+
+main {
+    let tope = UF_TOPE_IMPONIBLE * UF;   // UF viene del contexto, la const es del script
+
+    UF_TOPE_IMPONIBLE = 90.0;            // ERROR: ConstReassignment
+}
+</code></pre>
+<blockquote>
+<p>Las constantes son ideales para valores legales que el operador <strong>no debe poder cambiar</strong> desde configuración externa — tasas y topes que emanan de la ley.</p>
+</blockquote>
+<h2 id="comentarios"><a class="header" href="#comentarios">Comentarios</a></h2>
+<pre><code class="language-caper">// Comentario de línea
+
+/*
+   Comentario de bloque.
+   Puede ocupar múltiples líneas.
+*/
+
+let x = 10; // comentario al final de una línea
+</code></pre>
+<h2 id="punto-y-coma"><a class="header" href="#punto-y-coma">Punto y coma</a></h2>
+<p>Toda <strong>sentencia</strong> termina obligatoriamente en <code>;</code>. Los <strong>bloques</strong> <code>{ }</code> no llevan <code>;</code> después de la llave de cierre, excepto cuando el bloque es parte de una expresión asignada.</p>
+<pre><code class="language-caper">// Sentencias simples — siempre ;
+let x = 5;
+var total = 0;
+use std.math.round;
+emit { valor: x };
+
+// Bloques de control — sin ; después de }
+if x &gt; 0 {
+    total = total + x;
+}
+
+foreach item in lista {
+    total = total + item;
+}
+
+// Bloque como expresión asignada — el ; va al final
+let categoria = match sueldo {
+    n if n &lt; 500_000 =&gt; "basico",
+    _                =&gt; "alto"
+};
+
+let mensaje = if activo { "vigente" } else { "inactivo" };
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="variables-y-tipos"><a class="header" href="#variables-y-tipos">Variables y tipos</a></h1>
+<h2 id="declaración"><a class="header" href="#declaración">Declaración</a></h2>
+<pre><code class="language-caper">let nombre   = "Juan";    // inmutable — no se puede reasignar
+var contador = 0;         // mutable — puede reasignarse
+</code></pre>
+<pre><code class="language-caper">var total = 0.0;
+total = total + 1000;     // OK
+
+nombre = "Pedro";         // ERROR: ImmutableReassignment
+</code></pre>
+<p>Redeclarar una variable en el mismo scope también es un error:</p>
+<pre><code class="language-caper">let x = 1;
+let x = 2;    // ERROR: VariableRedeclaration
+</code></pre>
+<p>El shadowing en scopes anidados sí está permitido:</p>
+<pre><code class="language-caper">let x = 1;
+if condicion {
+    let x = 99;   // OK — scope distinto
+    emit x;       // 99
+}
+emit x;           // 1
+</code></pre>
+<h2 id="tipos-de-datos"><a class="header" href="#tipos-de-datos">Tipos de datos</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Tipo</th><th>Ejemplo</th><th>Notas</th></tr>
+</thead>
+<tbody>
+<tr><td>Número</td><td><code>42</code>, <code>3.14</code>, <code>-100</code>, <code>1_000_000</code></td><td>Siempre <code>Decimal</code> — sin float64</td></tr>
+<tr><td>String</td><td><code>"texto"</code>, <code>'texto'</code></td><td>Comillas simples o dobles equivalentes</td></tr>
+<tr><td>Booleano</td><td><code>true</code>, <code>false</code></td><td></td></tr>
+<tr><td>Null</td><td><code>null</code></td><td>Ausencia de valor</td></tr>
+<tr><td>Array</td><td><code>[1, 2, 3]</code></td><td>Indexado desde 0</td></tr>
+<tr><td>Objeto</td><td><code>{ clave: valor }</code></td><td>Claves string, orden de inserción preservado</td></tr>
+</tbody>
+</table>
+</div>
+<h3 id="números-exactos"><a class="header" href="#números-exactos">Números exactos</a></h3>
+<p>El tipo <code>Decimal</code> usa precisión arbitraria — nunca hay errores de punto flotante en cálculos monetarios:</p>
+<pre><code class="language-caper">let a = 0.1 + 0.2;   // 0.3 (exacto) — no 0.30000000000000004
+</code></pre>
+<p>Los guiones bajos en literales numéricos son ignorados (separador visual):</p>
+<pre><code class="language-caper">let tope = 1_000_000;   // equivalente a 1000000
+</code></pre>
+<h2 id="null-coalescing-"><a class="header" href="#null-coalescing-">Null coalescing (<code>??</code>)</a></h2>
+<p>El operador <code>??</code> retorna el lado derecho si el izquierdo es <code>null</code>:</p>
+<pre><code class="language-caper">let bono = BONO_ESPECIAL ?? 0;
+
+// Encadenado
+let config = A ?? B ?? C ?? "default";
+</code></pre>
+<p>Es la forma idiomática de dar valores por defecto a variables de contexto que podrían no estar presentes.</p>
+<h2 id="inyección-de-contexto"><a class="header" href="#inyección-de-contexto">Inyección de contexto</a></h2>
+<p>Las variables externas se inyectan automáticamente en el scope base del script. No hay que declararlas:</p>
+<pre><code class="language-caper">// SUELDO_BASE, DIAS_TRABAJADOS, AFP_TASA, UF, UTM, etc.
+// están disponibles directamente si el caller los inyectó
+
+let bruto = SUELDO_BASE + (BONO_ASISTENCIA ?? 0);
+</code></pre>
+<p>Si una variable del contexto no fue inyectada, su valor es <code>null</code>. Usa <code>??</code> para el caso seguro.</p>
+<p><strong>Prioridad del scope:</strong></p>
+<pre><code>const del header  &gt;  let/var del script  &gt;  contexto inyectado
+</code></pre>
+<p>Una <code>const</code> nunca puede ser sobreescrita por el contexto externo.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="operadores"><a class="header" href="#operadores">Operadores</a></h1>
+<h2 id="aritméticos"><a class="header" href="#aritméticos">Aritméticos</a></h2>
+<pre><code class="language-caper">let suma     = a + b;
+let resta    = a - b;
+let producto = a * b;
+let division = a / b;    // siempre Decimal, nunca división entera
+let modulo   = a % b;    // resto de la división
+let potencia = a ** b;   // a elevado a b
+</code></pre>
+<h2 id="comparación"><a class="header" href="#comparación">Comparación</a></h2>
+<pre><code class="language-caper">a == b    // igual
+a != b    // distinto
+a &gt; b
+a &lt; b
+a &gt;= b
+a &lt;= b
+</code></pre>
+<h2 id="lógicos"><a class="header" href="#lógicos">Lógicos</a></h2>
+<pre><code class="language-caper">a and b    // AND lógico
+a or b     // OR lógico
+not a      // NOT lógico
+</code></pre>
+<h2 id="string"><a class="header" href="#string">String</a></h2>
+<pre><code class="language-caper">let saludo = "Hola " + nombre;    // concatenación con +
+</code></pre>
+<p>Cualquier valor puede concatenarse con un string — se convierte automáticamente:</p>
+<pre><code class="language-caper">let msg = "Total: " + 850000;     // "Total: 850000"
+</code></pre>
+<h2 id="acceso-a-colecciones"><a class="header" href="#acceso-a-colecciones">Acceso a colecciones</a></h2>
+<pre><code class="language-caper">arr[0]         // acceso por índice base 0
+arr[-1]        // último elemento (índice negativo)
+arr[1..3]      // rango: elementos 1 y 2 (3 excluido)
+
+obj.clave      // acceso a objeto por nombre de campo
+obj["clave"]   // acceso por string dinámico (equivalente)
+</code></pre>
+<h2 id="null-coalescing"><a class="header" href="#null-coalescing">Null coalescing</a></h2>
+<pre><code class="language-caper">valor ?? fallback    // retorna fallback si valor es null
+</code></pre>
+<h2 id="precedencia"><a class="header" href="#precedencia">Precedencia</a></h2>
+<p>De mayor a menor precedencia:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Nivel</th><th>Operadores</th></tr>
+</thead>
+<tbody>
+<tr><td>1 (mayor)</td><td><code>not</code>, <code>-</code> (unario)</td></tr>
+<tr><td>2</td><td><code>**</code></td></tr>
+<tr><td>3</td><td><code>*</code>, <code>/</code>, <code>%</code></td></tr>
+<tr><td>4</td><td><code>+</code>, <code>-</code></td></tr>
+<tr><td>5</td><td><code>&gt;</code>, <code>&lt;</code>, <code>&gt;=</code>, <code>&lt;=</code></td></tr>
+<tr><td>6</td><td><code>==</code>, <code>!=</code></td></tr>
+<tr><td>7</td><td><code>and</code></td></tr>
+<tr><td>8</td><td><code>or</code></td></tr>
+<tr><td>9 (menor)</td><td><code>??</code></td></tr>
+</tbody>
+</table>
+</div>
+<p>Usa paréntesis para forzar cualquier orden de evaluación.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="control-de-flujo"><a class="header" href="#control-de-flujo">Control de flujo</a></h1>
+<h2 id="if--else-if--else"><a class="header" href="#if--else-if--else">if / else if / else</a></h2>
+<pre><code class="language-caper">if sueldo_base &gt; 1_000_000 {
+    var categoria = "alto";
+} else if sueldo_base &gt; 500_000 {
+    var categoria = "medio";
+} else {
+    var categoria = "basico";
+}
+</code></pre>
+<h3 id="if-como-expresión"><a class="header" href="#if-como-expresión">if como expresión</a></h3>
+<pre><code class="language-caper">let jornada = if horas_contrato &gt;= 45 { "completa" } else { "parcial" };
+</code></pre>
+<h2 id="match"><a class="header" href="#match">match</a></h2>
+<pre><code class="language-caper">// Sobre valor exacto
+let desc = match TIPO_CONTRATO {
+    "indefinido" =&gt; "Contrato a Plazo Indefinido",
+    "plazo_fijo" =&gt; "Contrato a Plazo Fijo",
+    "honorarios" =&gt; "Boleta de Honorarios",
+    _            =&gt; "Tipo no reconocido"
+};
+</code></pre>
+<h3 id="match-con-guards"><a class="header" href="#match-con-guards">match con guards</a></h3>
+<pre><code class="language-caper">let tramo = match sueldo_bruto {
+    n if n &lt;= 800_000   =&gt; 0.0,
+    n if n &lt;= 1_700_000 =&gt; 0.04,
+    n if n &lt;= 2_500_000 =&gt; 0.08,
+    n if n &lt;= 3_300_000 =&gt; 0.135,
+    _                   =&gt; 0.23
+};
+</code></pre>
+<p>Los patrones se evalúan en orden. El primero que coincide gana. <code>_</code> es el caso por defecto.</p>
+<h2 id="while"><a class="header" href="#while">while</a></h2>
+<pre><code class="language-caper">var i    = 0;
+var suma = 0;
+
+while (i &lt; count(haberes)) {
+    suma = suma + haberes[i];
+    i = i + 1;
+}
+</code></pre>
+<h2 id="foreach"><a class="header" href="#foreach">foreach</a></h2>
+<pre><code class="language-caper">// Iterar sobre un array
+foreach haber in haberes {
+    total = total + haber;
+}
+
+// Con índice numérico
+foreach i, haber in haberes {
+    // i: 0, 1, 2...  |  haber: el valor
+}
+
+// Iterar sobre un objeto
+let tasas = { "habitat": 0.1157, "cuprum": 0.1044 };
+
+foreach codigo, tasa in tasas {
+    // codigo: "habitat", "cuprum"...  |  tasa: el valor numérico
+}
+</code></pre>
+<h2 id="break-y-continue"><a class="header" href="#break-y-continue">break y continue</a></h2>
+<p>Disponibles en <code>while</code> y <code>foreach</code>:</p>
+<pre><code class="language-caper">foreach item in lista {
+    if item &lt; 0 { continue; }    // salta al siguiente
+    if item &gt; 1000 { break; }    // termina el loop
+    total = total + item;
+}
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="funciones-y-closures"><a class="header" href="#funciones-y-closures">Funciones y closures</a></h1>
+<h2 id="declaración-1"><a class="header" href="#declaración-1">Declaración</a></h2>
+<pre><code class="language-caper">fn calcular_gratificacion(sueldo_base, meses_trabajados) {
+    let base_anual   = sueldo_base * 12;
+    let proporcional = base_anual * 0.25 * meses_trabajados / 12;
+    let tope         = TOPE_GRATIFICACION_MENSUAL * UTM / 12;
+
+    emit min(proporcional, tope);
+}
+</code></pre>
+<p><code>emit</code> dentro de una función es el equivalente a <code>return</code>. Si no hay <code>emit</code>, la función retorna <code>null</code>.</p>
+<h2 id="llamada"><a class="header" href="#llamada">Llamada</a></h2>
+<pre><code class="language-caper">let grat = calcular_gratificacion(SUELDO_BASE, MESES_TRABAJADOS);
+</code></pre>
+<h2 id="recursión"><a class="header" href="#recursión">Recursión</a></h2>
+<pre><code class="language-caper">fn factorial(n) {
+    if n &lt;= 1 {
+        emit 1;
+    } else {
+        emit n * factorial(n - 1);
+    }
+}
+
+let resultado = factorial(5);   // 120
+</code></pre>
+<h2 id="closures-funciones-anónimas"><a class="header" href="#closures-funciones-anónimas">Closures (funciones anónimas)</a></h2>
+<pre><code class="language-caper">// Closure de expresión única
+let calcular_afp = |sueldo| =&gt; sueldo * AFP_TASA;
+
+// Closure con cuerpo
+let aplicar_descuento = |monto, porcentaje| =&gt; {
+    let descuento = monto * porcentaje;
+    emit monto - descuento;
+};
+
+// Como argumento directo (HOF)
+let montos_netos = map(haberes, |h| =&gt; h * 0.9);
+
+let mayores_a_cien = filter(valores, |v| =&gt; v &gt; 100);
+
+let total = reduce(haberes, |acc, h| =&gt; acc + h, 0);
+</code></pre>
+<h2 id="emit-como-return-de-función"><a class="header" href="#emit-como-return-de-función">emit como return de función</a></h2>
+<p>A diferencia de otros lenguajes, <code>emit</code> no solo produce la salida del script — también funciona como <code>return</code> dentro de funciones:</p>
+<pre><code class="language-caper">fn clasificar(n) {
+    if n &lt; 0     { emit "negativo"; }
+    if n == 0    { emit "cero"; }
+    emit "positivo";
+}
+
+let clase = clasificar(-5);   // "negativo"
+</code></pre>
+<p>El primer <code>emit</code> ejecutado dentro de la función termina su ejecución.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="arrays-y-objetos"><a class="header" href="#arrays-y-objetos">Arrays y objetos</a></h1>
+<h2 id="arrays"><a class="header" href="#arrays">Arrays</a></h2>
+<pre><code class="language-caper">let haberes = [SUELDO_BASE, BONO_ASISTENCIA, HORAS_EXTRA_MONTO];
+let vacio   = [];
+
+// Tipos mixtos (permitido)
+let mixto = [1, "dos", true, null, 3.14];
+
+// Arrays de arrays (matrices)
+let tramos = [
+    [0,       800_000,   0.0],
+    [800_001, 1_700_000, 0.04],
+    [1_700_001, null,    0.08]
+];
+</code></pre>
+<h3 id="acceso"><a class="header" href="#acceso">Acceso</a></h3>
+<pre><code class="language-caper">let primero  = haberes[0];       // índice base 0
+let ultimo   = haberes[-1];      // índice negativo: desde el final
+let subtotal = haberes[1..3];    // rango: elementos 1 y 2 (3 excluido)
+</code></pre>
+<h3 id="spread"><a class="header" href="#spread">Spread</a></h3>
+<pre><code class="language-caper">let base      = [100, 200];
+let extendido = [...base, 300];   // [100, 200, 300]
+</code></pre>
+<h2 id="objetos"><a class="header" href="#objetos">Objetos</a></h2>
+<pre><code class="language-caper">let empleado = {
+    nombre:  NOMBRE,
+    rut:     RUT,
+    jornada: HORAS_CONTRATO,
+    activo:  true
+};
+</code></pre>
+<h3 id="acceso-1"><a class="header" href="#acceso-1">Acceso</a></h3>
+<pre><code class="language-caper">let nombre = empleado.nombre;      // dot notation
+let rut    = empleado["rut"];      // equivalente con string dinámico
+</code></pre>
+<h3 id="objetos-anidados"><a class="header" href="#objetos-anidados">Objetos anidados</a></h3>
+<pre><code class="language-caper">let contrato = {
+    empleado: empleado,
+    tipo:     TIPO_CONTRATO,
+    inicio:   FECHA_INICIO
+};
+
+let nombre_en_contrato = contrato.empleado.nombre;
+</code></pre>
+<h3 id="spread-en-objeto"><a class="header" href="#spread-en-objeto">Spread en objeto</a></h3>
+<pre><code class="language-caper">let base_obj  = { nombre: "Juan", activo: true };
+let extendido = { ...base_obj, cargo: "Analista" };
+// { nombre: "Juan", activo: true, cargo: "Analista" }
+// Si hay clave duplicada, la más a la derecha prevalece.
+</code></pre>
+<h3 id="mutabilidad"><a class="header" href="#mutabilidad">Mutabilidad</a></h3>
+<p>Los objetos <code>let</code> son completamente inmutables — ningún campo puede modificarse:</p>
+<pre><code class="language-caper">let empleado = { nombre: "Juan" };
+empleado.nombre = "Pedro";    // ERROR: ImmutableReassignment
+</code></pre>
+<p>Los objetos <code>var</code> permiten mutación de campos individuales:</p>
+<pre><code class="language-caper">var resultado = {};
+resultado.sueldo_bruto     = sum(haberes);
+resultado.total_descuentos = sum(descuentos);
+resultado.liquido          = resultado.sueldo_bruto - resultado.total_descuentos;
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="manejo-de-errores"><a class="header" href="#manejo-de-errores">Manejo de errores</a></h1>
+<h2 id="try--catch"><a class="header" href="#try--catch">try / catch</a></h2>
+<p><code>try/catch</code> captura cualquier error — tanto los lanzados con <code>throw</code> como los errores internos del runtime:</p>
+<pre><code class="language-caper">// Como expresión con valor
+let tasa = try {
+    tasas_afp[AFP_CODIGO];
+} catch e {
+    0.1157    // valor por defecto si la clave no existe
+};            // ; al final porque es una expresión asignada
+
+// Como sentencia
+try {
+    let resultado = operacion_riesgosa();
+    emit resultado;
+} catch e {
+    emit { error: true, mensaje: e.message };
+}
+</code></pre>
+<p>El objeto <code>e</code> siempre tiene dos campos:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Campo</th><th>Tipo</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>e.code</code></td><td>string</td><td>Código del error. Para <code>throw</code> con objeto: el <code>code</code> del usuario. Para errores internos: el código de runtime (<code>"DIVISION_BY_ZERO"</code>, etc.).</td></tr>
+<tr><td><code>e.message</code></td><td>string</td><td>Mensaje legible.</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="throw"><a class="header" href="#throw">throw</a></h2>
+<p><code>throw</code> termina la ejecución del bloque actual lanzando una excepción:</p>
+<pre><code class="language-caper">// Con mensaje simple
+throw "El sueldo base no puede ser cero";
+
+// Con objeto estructurado (recomendado)
+throw { code: "SUELDO_INVALIDO", message: "El sueldo base debe ser positivo" };
+</code></pre>
+<h3 id="throw-en-funciones"><a class="header" href="#throw-en-funciones">throw en funciones</a></h3>
+<pre><code class="language-caper">fn validar_sueldo(base) {
+    if base &lt;= 0 {
+        throw { code: "VALIDACION", message: "sueldo debe ser positivo" };
+    }
+    emit base;
+}
+
+let r = try {
+    emit validar_sueldo(-1);
+} catch e {
+    emit e.code + ": " + e.message;   // "VALIDACION: sueldo debe ser positivo"
+};
+</code></pre>
+<h3 id="excepción-no-capturada"><a class="header" href="#excepción-no-capturada">Excepción no capturada</a></h3>
+<p>Si un <code>throw</code> no está dentro de ningún <code>try/catch</code>, el script termina con error:</p>
+<pre><code class="language-json">{
+    "status": "error",
+    "error": {
+        "type":    "USER_THROW",
+        "code":    "SUELDO_INVALIDO",
+        "message": "El sueldo base debe ser positivo",
+        "line":    12
+    }
+}
+</code></pre>
+<p>Para errores internos del runtime (división por cero, tipo incorrecto, etc.):</p>
+<pre><code class="language-json">{
+    "status": "error",
+    "error": {
+        "type":    "DIVISION_BY_ZERO",
+        "message": "Division by zero at line 8"
+    }
+}
+</code></pre>
+<h2 id="códigos-de-error-internos"><a class="header" href="#códigos-de-error-internos">Códigos de error internos</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Código</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>UNDEFINED_VARIABLE</code></td><td>Variable usada sin declarar ni inyectar</td></tr>
+<tr><td><code>TYPE_ERROR</code></td><td>Operación sobre tipo incorrecto</td></tr>
+<tr><td><code>DIVISION_BY_ZERO</code></td><td>División entre cero</td></tr>
+<tr><td><code>CONST_REASSIGNMENT</code></td><td>Intento de reasignar una <code>const</code></td></tr>
+<tr><td><code>IMMUTABLE_REASSIGNMENT</code></td><td>Intento de reasignar un <code>let</code></td></tr>
+<tr><td><code>VARIABLE_REDECLARATION</code></td><td>Variable declarada dos veces en el mismo scope</td></tr>
+<tr><td><code>INDEX_OUT_OF_BOUNDS</code></td><td>Acceso a índice fuera del rango del array</td></tr>
+<tr><td><code>KEY_NOT_FOUND</code></td><td>Acceso a campo inexistente en un objeto (con operador de acceso directo)</td></tr>
+<tr><td><code>STACK_OVERFLOW</code></td><td>Recursión que excede el límite de llamadas</td></tr>
+<tr><td><code>LOOP_LIMIT_EXCEEDED</code></td><td>Loop que excede el límite de iteraciones</td></tr>
+<tr><td><code>CIRCULAR_IMPORT</code></td><td>Importación circular detectada</td></tr>
+<tr><td><code>IMPORT_NOT_FOUND</code></td><td>Archivo de import no encontrado</td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="imports-y-proyectos"><a class="header" href="#imports-y-proyectos">Imports y proyectos</a></h1>
+<h2 id="stdlib"><a class="header" href="#stdlib">Stdlib</a></h2>
+<pre><code class="language-caper">use std.math;                              // importa todo el módulo
+use std.arrays.{ sum, avg, filter };       // funciones específicas
+use std.strings.upper;                     // una sola función
+use std.dates;
+</code></pre>
+<p>Las funciones importadas están disponibles directamente por nombre en el resto del script.</p>
+<h2 id="librerías-propias-multi-archivo"><a class="header" href="#librerías-propias-multi-archivo">Librerías propias (multi-archivo)</a></h2>
+<p>Los scripts <code>.caper</code> pueden importar funciones de otros archivos <code>.caper</code>. El archivo importado opera en <strong>library mode</strong>: solo se exportan las funciones declaradas con <code>fn</code>. Las sentencias <code>emit</code> en librerías son ignoradas.</p>
+<pre><code class="language-caper">// Importar funciones específicas
+use formulas.gratificacion.{ calcular, tope };
+use lib.validaciones.{ validar_positivo, validar_rango };
+
+// Usar con normalidad
+let grat = calcular(SUELDO_BASE, DIAS_TRABAJADOS);
+</code></pre>
+<p><strong>Resolución de rutas:</strong> <code>formulas.gratificacion</code> → <code>formulas/gratificacion.caper</code> relativo al directorio base del script principal.</p>
+<h2 id="path-aliases"><a class="header" href="#path-aliases">Path aliases</a></h2>
+<p>Define aliases en <code>.capercfg</code> para rutas largas o compartidas (similar a <code>paths</code> en <code>tsconfig.json</code>):</p>
+<pre><code class="language-json">{
+    "paths": {
+        "@lib":      "./lib",
+        "@formulas": "/opt/formulas-nacion"
+    }
+}
+</code></pre>
+<pre><code class="language-caper">use @lib.validaciones.{ validar_positivo };
+use @formulas.afp.{ calcular_descuento };
+</code></pre>
+<h2 id="paquetes-de-terceros-vendors"><a class="header" href="#paquetes-de-terceros-vendors">Paquetes de terceros (<code>vendors/</code>)</a></h2>
+<p>Los paquetes instalados con <code>caper install</code> se resuelven desde <code>vendors/</code>:</p>
+<pre><code class="language-caper">use @mongoose/nomina-cl.afp.{ calcular_descuento };
+use mongoose/utils.fechas.{ es_feriado };
+</code></pre>
+<pre><code class="language-bash"># Instalar un paquete local o git
+caper install /ruta/local/mi-paquete
+caper install git+https://github.com/org/paquete --tag v1.0.0
+</code></pre>
+<h2 id="proyecto--capercfg"><a class="header" href="#proyecto--capercfg">Proyecto — <code>.capercfg</code></a></h2>
+<p>Un directorio con <code>.capercfg</code> es un proyecto. Permite correr <code>caper run</code> sin especificar script:</p>
+<pre><code class="language-json">{
+    "name":        "liquidacion-mensual",
+    "version":     "1.0.0",
+    "description": "Fórmulas de liquidación estándar",
+    "author":      "Marcel Rojas",
+    "entry":       "main.caper",
+    "context": {
+        "UF":  36000,
+        "UTM": 65000
+    },
+    "paths": {
+        "@lib":      "./lib",
+        "@formulas": "./formulas"
+    }
+}
+</code></pre>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Campo</th><th>Default</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>entry</code></td><td><code>"main.caper"</code></td><td>Script de entrada</td></tr>
+<tr><td><code>context</code></td><td><code>{}</code></td><td>Variables de contexto base</td></tr>
+<tr><td><code>paths</code></td><td><code>{}</code></td><td>Aliases de rutas para imports</td></tr>
+</tbody>
+</table>
+</div>
+<p><strong>Precedencia de contexto:</strong> <code>--context</code> CLI &gt; <code>context</code> en <code>.capercfg</code>.</p>
+<p><strong>Búsqueda del config:</strong> el CLI sube por el árbol de directorios hasta encontrar <code>.capercfg</code>. Si no existe, termina con error.</p>
+<h2 id="comportamiento-de-imports"><a class="header" href="#comportamiento-de-imports">Comportamiento de imports</a></h2>
+<ul>
+<li><strong>Cache:</strong> un archivo importado por múltiples scripts en la misma ejecución se carga una sola vez.</li>
+<li><strong>Circular imports:</strong> <code>A → B → A</code> lanza <code>CIRCULAR_IMPORT</code> inmediatamente.</li>
+<li><strong>Library mode:</strong> el <code>header</code> de un archivo importado es privado para ese archivo. Solo sus <code>fn</code> son exportadas.</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="stdmath"><a class="header" href="#stdmath">std.math</a></h1>
+<pre><code class="language-caper">use std.math.{ round, min, max, abs };
+// o todo el módulo:
+use std.math;
+</code></pre>
+<h2 id="funciones"><a class="header" href="#funciones">Funciones</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Función</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>abs(n)</code></td><td>Valor absoluto</td></tr>
+<tr><td><code>ceil(n)</code></td><td>Entero superior más cercano</td></tr>
+<tr><td><code>floor(n)</code></td><td>Entero inferior más cercano</td></tr>
+<tr><td><code>round(n, d)</code></td><td>Redondea a <code>d</code> decimales</td></tr>
+<tr><td><code>trunc(n, d)</code></td><td>Trunca a <code>d</code> decimales sin redondear</td></tr>
+<tr><td><code>max(a, b)</code></td><td>El mayor de dos valores</td></tr>
+<tr><td><code>min(a, b)</code></td><td>El menor de dos valores</td></tr>
+<tr><td><code>pow(base, exp)</code></td><td>Potencia</td></tr>
+<tr><td><code>sqrt(n)</code></td><td>Raíz cuadrada</td></tr>
+<tr><td><code>sign(n)</code></td><td><code>-1</code>, <code>0</code> o <code>1</code> según el signo</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="ejemplos"><a class="header" href="#ejemplos">Ejemplos</a></h2>
+<pre><code class="language-caper">use std.math.{ round, min, abs, ceil, floor };
+
+let desc_afp  = round(850000 * 0.1157, 0);   // 98345
+let desc_tope = min(desc_afp, 100000);        // 98345
+
+let diferencia = abs(-5000);                  // 5000
+let pagos       = ceil(1500 / 400);           // 4 (cuotas)
+let parte_entera = floor(3.99);              // 3
+</code></pre>
+<h3 id="round--el-más-usado-en-nómina"><a class="header" href="#round--el-más-usado-en-nómina">round — el más usado en nómina</a></h3>
+<pre><code class="language-caper">round(1234.567, 2)    // 1234.57
+round(1234.567, 0)    // 1235
+round(1234.567, -2)   // 1200  (redondea a centenas)
+</code></pre>
+<blockquote>
+<p><code>round</code> usa redondeo bancario (half-to-even) por defecto, que es el estándar para cálculos financieros.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="stdstrings"><a class="header" href="#stdstrings">std.strings</a></h1>
+<pre><code class="language-caper">use std.strings.{ upper, lower, trim, split, join, len };
+</code></pre>
+<h2 id="funciones-1"><a class="header" href="#funciones-1">Funciones</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Función</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>len(s)</code></td><td>Longitud en caracteres</td></tr>
+<tr><td><code>upper(s)</code></td><td>Mayúsculas</td></tr>
+<tr><td><code>lower(s)</code></td><td>Minúsculas</td></tr>
+<tr><td><code>trim(s)</code></td><td>Elimina espacios al inicio y fin</td></tr>
+<tr><td><code>ltrim(s)</code></td><td>Elimina espacios al inicio</td></tr>
+<tr><td><code>rtrim(s)</code></td><td>Elimina espacios al fin</td></tr>
+<tr><td><code>contains(s, sub)</code></td><td><code>true</code> si <code>sub</code> está en <code>s</code></td></tr>
+<tr><td><code>starts_with(s, prefix)</code></td><td><code>true</code> si <code>s</code> comienza con <code>prefix</code></td></tr>
+<tr><td><code>ends_with(s, suffix)</code></td><td><code>true</code> si <code>s</code> termina con <code>suffix</code></td></tr>
+<tr><td><code>replace(s, from, to)</code></td><td>Reemplaza primera ocurrencia</td></tr>
+<tr><td><code>replace_all(s, from, to)</code></td><td>Reemplaza todas las ocurrencias</td></tr>
+<tr><td><code>split(s, sep)</code></td><td>Divide string en array</td></tr>
+<tr><td><code>join(arr, sep)</code></td><td>Une array en string</td></tr>
+<tr><td><code>substr(s, start, length)</code></td><td>Subcadena</td></tr>
+<tr><td><code>pad_left(s, n, char)</code></td><td>Rellena por la izquierda hasta longitud <code>n</code></td></tr>
+<tr><td><code>pad_right(s, n, char)</code></td><td>Rellena por la derecha</td></tr>
+<tr><td><code>str(v)</code></td><td>Convierte cualquier valor a string</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="ejemplos-1"><a class="header" href="#ejemplos-1">Ejemplos</a></h2>
+<pre><code class="language-caper">use std.strings.{ upper, lower, trim, split, join, pad_left, str, replace_all };
+
+let nombre = trim("  Juan Pérez  ");              // "Juan Pérez"
+let codigo = upper("afp-habitat");                 // "AFP-HABITAT"
+
+// Formatear RUT
+let rut_limpio = replace_all("12.345.678-9", ".", "");  // "12345678-9"
+
+// Formatear número como string con padding
+let folio = pad_left(str(42), 8, "0");            // "00000042"
+
+// Parsear CSV simple
+let fila    = "Juan;850000;AFP-HABITAT";
+let campos  = split(fila, ";");
+let nombre  = campos[0];   // "Juan"
+let sueldo  = campos[1];   // "850000" (string)
+
+// Construir un código
+let partes  = ["CL", "2026", "03"];
+let periodo = join(partes, "-");                   // "CL-2026-03"
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="stdarrays"><a class="header" href="#stdarrays">std.arrays</a></h1>
+<pre><code class="language-caper">use std.arrays.{ sum, avg, filter, map, count };
+</code></pre>
+<h2 id="funciones-2"><a class="header" href="#funciones-2">Funciones</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Función</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>count(arr)</code></td><td>Número de elementos (alias: <code>len</code>)</td></tr>
+<tr><td><code>push(arr, item)</code></td><td>Retorna nuevo array con <code>item</code> al final</td></tr>
+<tr><td><code>pop(arr)</code></td><td>Retorna <code>[ultimo, resto]</code> — no muta</td></tr>
+<tr><td><code>unshift(arr, item)</code></td><td>Retorna nuevo array con <code>item</code> al inicio</td></tr>
+<tr><td><code>first(arr)</code></td><td>Primer elemento</td></tr>
+<tr><td><code>last(arr)</code></td><td>Último elemento</td></tr>
+<tr><td><code>slice(arr, start, end)</code></td><td>Subarray de <code>start</code> a <code>end</code> (excluido)</td></tr>
+<tr><td><code>reverse(arr)</code></td><td>Retorna array invertido</td></tr>
+<tr><td><code>sort(arr)</code></td><td>Retorna array ordenado ascendente</td></tr>
+<tr><td><code>unique(arr)</code></td><td>Elimina duplicados</td></tr>
+<tr><td><code>flatten(arr)</code></td><td>Aplana un nivel de anidamiento</td></tr>
+<tr><td><code>flatten_deep(arr)</code></td><td>Aplana completamente</td></tr>
+<tr><td><code>contains(arr, val)</code></td><td><code>true</code> si el valor está en el array</td></tr>
+<tr><td><code>index_of(arr, val)</code></td><td>Índice del valor (o <code>-1</code>)</td></tr>
+<tr><td><code>sum(arr)</code></td><td>Suma de todos los elementos numéricos</td></tr>
+<tr><td><code>avg(arr)</code></td><td>Promedio de los elementos numéricos</td></tr>
+<tr><td><code>min_of(arr)</code></td><td>El mínimo del array</td></tr>
+<tr><td><code>max_of(arr)</code></td><td>El máximo del array</td></tr>
+<tr><td><code>zip(arr1, arr2)</code></td><td><code>[[arr1[0],arr2[0]], ...]</code></td></tr>
+<tr><td><code>range(start, end)</code></td><td>Array <code>[start, ..., end-1]</code></td></tr>
+<tr><td><code>range(start, end, step)</code></td><td>Con paso personalizado</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="hof-funciones-de-orden-superior"><a class="header" href="#hof-funciones-de-orden-superior">HOF (funciones de orden superior)</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Función</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>map(arr, fn)</code></td><td>Transforma cada elemento</td></tr>
+<tr><td><code>filter(arr, fn)</code></td><td>Filtra por predicado</td></tr>
+<tr><td><code>reduce(arr, fn, init)</code></td><td>Acumula en un valor</td></tr>
+<tr><td><code>find(arr, fn)</code></td><td>Primer elemento que cumple el predicado</td></tr>
+<tr><td><code>any(arr, fn)</code></td><td><code>true</code> si algún elemento cumple</td></tr>
+<tr><td><code>all(arr, fn)</code></td><td><code>true</code> si todos cumplen</td></tr>
+<tr><td><code>sort_by(arr, fn)</code></td><td>Ordena por función comparadora</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="ejemplos-2"><a class="header" href="#ejemplos-2">Ejemplos</a></h2>
+<pre><code class="language-caper">use std.arrays.{ sum, avg, filter, map, reduce, count, range };
+
+let haberes    = [850000, 50000, 30000, 20000];
+let total      = sum(haberes);                    // 950000
+let promedio   = avg(haberes);                    // 237500
+
+let positivos  = filter(haberes, |h| =&gt; h &gt; 0);
+let con_iva    = map(haberes, |h| =&gt; h * 1.19);
+let acumulado  = reduce(haberes, |acc, h| =&gt; acc + h, 0);
+
+let indices    = range(0, 5);      // [0, 1, 2, 3, 4]
+let pares      = range(0, 10, 2);  // [0, 2, 4, 6, 8]
+
+// Caso nómina: calcular descuentos totales de una lista de empleados
+let descuentos = map(EMPLEADOS, |e| =&gt; e.sueldo * e.tasa_afp);
+let total_desc = sum(descuentos);
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="stdobjects"><a class="header" href="#stdobjects">std.objects</a></h1>
+<pre><code class="language-caper">use std.objects.{ keys, values, has, merge, pick, omit };
+</code></pre>
+<h2 id="funciones-3"><a class="header" href="#funciones-3">Funciones</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Función</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>keys(obj)</code></td><td>Array de claves string</td></tr>
+<tr><td><code>values(obj)</code></td><td>Array de valores</td></tr>
+<tr><td><code>entries(obj)</code></td><td>Array de <code>[clave, valor]</code></td></tr>
+<tr><td><code>has(obj, key)</code></td><td><code>true</code> si la clave existe</td></tr>
+<tr><td><code>get(obj, key, default)</code></td><td>Obtiene valor o <code>default</code> si no existe</td></tr>
+<tr><td><code>merge(obj1, obj2)</code></td><td>Une dos objetos (obj2 prevalece en conflicto)</td></tr>
+<tr><td><code>omit(obj, keys)</code></td><td>Retorna objeto sin las claves indicadas</td></tr>
+<tr><td><code>pick(obj, keys)</code></td><td>Retorna objeto solo con las claves indicadas</td></tr>
+<tr><td><code>count(obj)</code></td><td>Número de claves</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="ejemplos-3"><a class="header" href="#ejemplos-3">Ejemplos</a></h2>
+<pre><code class="language-caper">use std.objects.{ keys, has, get, merge, pick, omit };
+
+let empleado = {
+    nombre: "Juan",
+    rut:    "12345678-9",
+    sueldo: 850000,
+    activo: true
+};
+
+let campos = keys(empleado);         // ["nombre", "rut", "sueldo", "activo"]
+let existe  = has(empleado, "rut");  // true
+
+// Acceso seguro con default
+let cargo  = get(empleado, "cargo", "Sin cargo");   // "Sin cargo"
+
+// Fusionar objetos (útil para enriquecer resultados)
+let base   = { nombre: "Juan", sueldo: 850000 };
+let extras = { cargo: "Analista", depto: "TI" };
+let completo = merge(base, extras);
+// { nombre: "Juan", sueldo: 850000, cargo: "Analista", depto: "TI" }
+
+// Seleccionar solo algunos campos
+let publico  = pick(empleado, ["nombre", "cargo"]);
+let sin_rut  = omit(empleado, ["rut"]);
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="stdtypes"><a class="header" href="#stdtypes">std.types</a></h1>
+<pre><code class="language-caper">use std.types.{ type_of, is_null, number, bool };
+</code></pre>
+<h2 id="funciones-4"><a class="header" href="#funciones-4">Funciones</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Función</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>type_of(v)</code></td><td><code>"number"</code>, <code>"string"</code>, <code>"bool"</code>, <code>"array"</code>, <code>"object"</code>, <code>"null"</code></td></tr>
+<tr><td><code>is_null(v)</code></td><td><code>v == null</code></td></tr>
+<tr><td><code>is_number(v)</code></td><td><code>true</code> si es número</td></tr>
+<tr><td><code>is_string(v)</code></td><td><code>true</code> si es string</td></tr>
+<tr><td><code>is_bool(v)</code></td><td><code>true</code> si es booleano</td></tr>
+<tr><td><code>is_array(v)</code></td><td><code>true</code> si es array</td></tr>
+<tr><td><code>is_object(v)</code></td><td><code>true</code> si es objeto</td></tr>
+<tr><td><code>number(v)</code></td><td>Coerce a número (error si no parseable)</td></tr>
+<tr><td><code>int(v)</code></td><td>Coerce a entero (trunca decimales)</td></tr>
+<tr><td><code>bool(v)</code></td><td>Coerce a booleano</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="valores-falsy"><a class="header" href="#valores-falsy">Valores falsy</a></h2>
+<p><code>bool(v)</code> retorna <code>false</code> para: <code>0</code>, <code>""</code>, <code>null</code>, <code>[]</code>, <code>{}</code>. Todo lo demás es truthy.</p>
+<h2 id="ejemplos-4"><a class="header" href="#ejemplos-4">Ejemplos</a></h2>
+<pre><code class="language-caper">use std.types.{ type_of, is_null, number, int };
+
+let t1 = type_of(42);          // "number"
+let t2 = type_of("hola");      // "string"
+let t3 = type_of([1, 2]);      // "array"
+let t4 = type_of(null);        // "null"
+
+// Coerce seguro desde contexto inyectado
+let sueldo = number(SUELDO_RAW ?? "0");     // string → Decimal
+let dias   = int(DIAS_TRABAJADOS ?? "30");  // string → entero
+
+// Validar antes de operar
+if not is_number(TASA) {
+    throw { code: "TIPO_INVALIDO", message: "TASA debe ser un número" };
+}
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="stdjson"><a class="header" href="#stdjson">std.json</a></h1>
+<pre><code class="language-caper">use std.json.{ json_encode, json_decode, json_valid };
+</code></pre>
+<h2 id="funciones-5"><a class="header" href="#funciones-5">Funciones</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Función</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>json_encode(v)</code></td><td>Serializa cualquier valor a string JSON</td></tr>
+<tr><td><code>json_decode(s)</code></td><td>Parsea un string JSON → valor</td></tr>
+<tr><td><code>json_valid(s)</code></td><td><code>true</code> si el string es JSON válido, sin lanzar error</td></tr>
+<tr><td><code>json_pretty(v)</code></td><td><code>json_encode</code> con indentación legible</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="ejemplos-5"><a class="header" href="#ejemplos-5">Ejemplos</a></h2>
+<pre><code class="language-caper">use std.json.{ json_encode, json_decode, json_valid, json_pretty };
+
+let datos = { nombre: "Juan", monto: 850000 };
+
+let serializado = json_encode(datos);
+// '{"nombre":"Juan","monto":850000}'
+
+let de_vuelta   = json_decode(serializado);
+// objeto de vuelta, accesible con de_vuelta.nombre
+
+// Leer configuración compleja inyectada como string JSON
+let config_extra = json_decode(CONFIG_JSON ?? "{}");
+let tasa_extra   = config_extra.tasa_bono ?? 0;
+
+// Validar sin lanzar error
+if not json_valid(INPUT_RAW) {
+    throw { code: "JSON_INVALIDO", message: "El input no es JSON válido" };
+}
+
+// Debug legible
+emit json_pretty(datos);
+/*
+{
+  "nombre": "Juan",
+  "monto": 850000
+}
+*/
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="stddates"><a class="header" href="#stddates">std.dates</a></h1>
+<pre><code class="language-caper">use std.dates.{ today, date_diff, date_add, working_days };
+</code></pre>
+<h2 id="funciones-6"><a class="header" href="#funciones-6">Funciones</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Función</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>today()</code></td><td>Fecha actual como string <code>"YYYY-MM-DD"</code></td></tr>
+<tr><td><code>now()</code></td><td>Datetime actual como string ISO 8601</td></tr>
+<tr><td><code>year(d)</code></td><td>Año como número</td></tr>
+<tr><td><code>month(d)</code></td><td>Mes como número (1–12)</td></tr>
+<tr><td><code>day(d)</code></td><td>Día del mes como número</td></tr>
+<tr><td><code>date_diff(d1, d2)</code></td><td>Diferencia en días (<code>d2 - d1</code>)</td></tr>
+<tr><td><code>date_diff(d1, d2, unit)</code></td><td>Diferencia en <code>"day"</code>, <code>"month"</code>, <code>"year"</code></td></tr>
+<tr><td><code>date_add(d, n, unit)</code></td><td>Suma <code>n</code> unidades a la fecha</td></tr>
+<tr><td><code>date_sub(d, n, unit)</code></td><td>Resta <code>n</code> unidades</td></tr>
+<tr><td><code>date_format(d, fmt)</code></td><td>Formatea fecha (<code>"DD/MM/YYYY"</code>, <code>"MM-YYYY"</code>, etc.)</td></tr>
+<tr><td><code>date_parse(s, fmt)</code></td><td>Parsea string a fecha interna</td></tr>
+<tr><td><code>is_valid_date(s)</code></td><td><code>true</code> si el string es una fecha válida</td></tr>
+<tr><td><code>working_days(year, month)</code></td><td>Días hábiles del mes (lunes–viernes, sin festivos CL)</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="ejemplos-6"><a class="header" href="#ejemplos-6">Ejemplos</a></h2>
+<pre><code class="language-caper">use std.dates.{ today, year, month, date_diff, date_add, date_format, working_days };
+
+let hoy       = today();                           // "2026-04-16"
+let anio      = year(hoy);                         // 2026
+let mes       = month(hoy);                        // 4
+
+// Proporcional por días trabajados
+let dias_mes  = working_days(anio, mes);           // días hábiles del mes actual
+let sueldo_prop = SUELDO_BASE * DIAS_TRABAJADOS / dias_mes;
+
+// Antigüedad en años
+let antiguedad = date_diff(FECHA_INGRESO, hoy, "year");
+
+// Próximo vencimiento
+let vence = date_add(hoy, 30, "day");              // "2026-05-16"
+
+// Formato para documentos
+let fecha_doc = date_format(hoy, "DD/MM/YYYY");    // "16/04/2026"
+</code></pre>
+<blockquote>
+<p><code>working_days</code> usa el calendario de festivos de Chile. El dataset se actualiza anualmente en cada release del runtime.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="stdregex"><a class="header" href="#stdregex">std.regex</a></h1>
+<pre><code class="language-caper">use std.regex.{ regex_test, regex_match, regex_find, regex_replace_all };
+</code></pre>
+<p>Los patrones usan sintaxis de expresiones regulares estándar (Rust regex). Las barras invertidas en los patrones van <strong>duplicadas</strong> (<code>\\d</code>, <code>\\.</code>) porque el string de AlcaparraLang las interpreta antes que el motor de regex.</p>
+<h2 id="funciones-7"><a class="header" href="#funciones-7">Funciones</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Función</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>regex_test(s, pattern)</code></td><td><code>true</code> si el patrón aparece en alguna parte del string</td></tr>
+<tr><td><code>regex_match(s, pattern)</code></td><td><code>true</code> si el string <strong>completo</strong> cumple el patrón (anchored)</td></tr>
+<tr><td><code>regex_find(s, pattern)</code></td><td>Primera coincidencia como string (o <code>null</code>)</td></tr>
+<tr><td><code>regex_find_all(s, pattern)</code></td><td>Array con todas las coincidencias</td></tr>
+<tr><td><code>regex_groups(s, pattern)</code></td><td>Array con grupos de captura <code>()</code> de la primera coincidencia</td></tr>
+<tr><td><code>regex_replace(s, pattern, repl)</code></td><td>Reemplaza primera coincidencia</td></tr>
+<tr><td><code>regex_replace_all(s, pattern, repl)</code></td><td>Reemplaza todas las coincidencias</td></tr>
+<tr><td><code>regex_split(s, pattern)</code></td><td>Divide el string por el patrón</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="ejemplos-7"><a class="header" href="#ejemplos-7">Ejemplos</a></h2>
+<pre><code class="language-caper">use std.regex.{ regex_test, regex_match, regex_find, regex_find_all,
+                regex_groups, regex_replace_all, regex_split };
+
+// Validar que existe un patrón en el string
+let tiene_numeros = regex_test("ABC-123", "\\d+");          // true
+
+// Validar el string completo
+let rut_valido  = regex_match(RUT, "\\d{1,8}-[\\dkK]");    // true/false
+let email_ok    = regex_match(EMAIL, "[^@]+@[^@]+\\.[^@]+"); // true/false
+
+// Extraer primera coincidencia
+let primer_num  = regex_find("ref AB-1234 / cod 5678", "\\d+");   // "1234"
+let sin_match   = regex_find("sin numeros", "\\d+");               // null
+
+// Extraer todas las coincidencias
+let todos_nums  = regex_find_all("1, 20, 300", "\\d+");   // ["1", "20", "300"]
+
+// Grupos de captura
+let partes = regex_groups("2026-04-16", "(\\d{4})-(\\d{2})-(\\d{2})");
+let anio   = partes[0];   // "2026"
+let mes    = partes[1];   // "04"
+let dia    = partes[2];   // "16"
+
+// Limpieza de strings
+let sin_puntos = regex_replace_all("1.250.000", "\\.", "");     // "1250000"
+let normalizado = regex_replace_all(NOMBRE, "\\s+", " ");       // espacios múltiples → uno
+
+// Split por patrón
+let campos = regex_split("a, b,c ,  d", "\\s*,\\s*");  // ["a", "b", "c", "d"]
+</code></pre>
+<h2 id="caso-real-validar-y-limpiar-rut"><a class="header" href="#caso-real-validar-y-limpiar-rut">Caso real: validar y limpiar RUT</a></h2>
+<pre><code class="language-caper">use std.regex.{ regex_match, regex_replace_all };
+
+fn validar_rut(rut) {
+    // Acepta formatos: "12345678-9", "12.345.678-9", "12345678K"
+    let rut_limpio = regex_replace_all(rut, "[^0-9kK-]", "");
+
+    if not regex_match(rut_limpio, "\\d{1,8}-?[\\dkK]") {
+        throw { code: "RUT_INVALIDO", message: "Formato de RUT incorrecto: " + rut };
+    }
+    emit rut_limpio;
+}
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="stdcrypto"><a class="header" href="#stdcrypto">std.crypto</a></h1>
+<pre><code class="language-caper">use std.crypto.{ sha256, md5, base64_encode, base64_decode };
+</code></pre>
+<h2 id="funciones-8"><a class="header" href="#funciones-8">Funciones</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Función</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>md5(s)</code></td><td>Hash MD5 → hex string de 32 caracteres</td></tr>
+<tr><td><code>sha1(s)</code></td><td>Hash SHA-1 → hex string de 40 caracteres</td></tr>
+<tr><td><code>sha256(s)</code></td><td>Hash SHA-256 → hex string de 64 caracteres</td></tr>
+<tr><td><code>sha512(s)</code></td><td>Hash SHA-512 → hex string de 128 caracteres</td></tr>
+<tr><td><code>hmac_sha256(data, key)</code></td><td>HMAC-SHA256 → hex string</td></tr>
+<tr><td><code>base64_encode(s)</code></td><td>Codifica a Base64</td></tr>
+<tr><td><code>base64_decode(s)</code></td><td>Decodifica desde Base64</td></tr>
+<tr><td><code>base64_url_encode(s)</code></td><td>Codifica a Base64 URL-safe (sin <code>+</code>, <code>/</code>, <code>=</code>)</td></tr>
+<tr><td><code>hex_encode(s)</code></td><td>Codifica a hex string</td></tr>
+<tr><td><code>hex_decode(s)</code></td><td>Decodifica desde hex string</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="ejemplos-8"><a class="header" href="#ejemplos-8">Ejemplos</a></h2>
+<pre><code class="language-caper">use std.crypto.{ sha256, md5, base64_encode, hmac_sha256 };
+use std.json.json_encode;
+
+// Huella de configuración para auditoría
+let formula_hash = sha256(json_encode(FORMULAS_CONFIG));
+
+// Cache key única por empleado y período
+let cache_key = md5(RUT + "-" + PERIODO + "-" + str(SUELDO_BASE));
+
+// Payload para integración externa
+let payload_b64 = base64_encode(json_encode({
+    rut:    RUT,
+    monto:  TOTAL_LIQUIDO,
+    firma:  sha256(RUT + PERIODO + str(TOTAL_LIQUIDO))
+}));
+
+// Firma HMAC para webhook
+let firma = hmac_sha256(json_encode(PAYLOAD), API_SECRET);
+</code></pre>
+<blockquote>
+<p><strong>Nota de seguridad:</strong> MD5 y SHA-1 están incluidos por utilidad general (checksums, cache keys). Para firmas o autenticación usar SHA-256 o superior.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="stdsort"><a class="header" href="#stdsort">std.sort</a></h1>
+<pre><code class="language-caper">use std.sort.{ order_by, group_by_key, sort_desc };
+</code></pre>
+<h2 id="funciones-9"><a class="header" href="#funciones-9">Funciones</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Función</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>sort_asc(arr)</code></td><td>Ordena ascendente</td></tr>
+<tr><td><code>sort_desc(arr)</code></td><td>Ordena descendente</td></tr>
+<tr><td><code>sort_by(arr, key)</code></td><td>Ordena array de objetos por un campo string</td></tr>
+<tr><td><code>sort_by_desc(arr, key)</code></td><td>Igual pero descendente</td></tr>
+<tr><td><code>order_by(arr, criterios)</code></td><td>Multi-campo: <code>[["campo", "asc"], ["otro", "desc"]]</code></td></tr>
+<tr><td><code>group_by(arr, fn)</code></td><td>Agrupa en objeto <code>{ clave: [items] }</code></td></tr>
+<tr><td><code>group_by_key(arr, key)</code></td><td>Atajo cuando el criterio es un campo del objeto</td></tr>
+<tr><td><code>partition(arr, fn)</code></td><td>Divide en <code>[los_que_cumplen, los_que_no]</code></td></tr>
+<tr><td><code>chunk(arr, n)</code></td><td>Divide en sub-arrays de tamaño <code>n</code></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="ejemplos-9"><a class="header" href="#ejemplos-9">Ejemplos</a></h2>
+<pre><code class="language-caper">use std.sort.{ order_by, group_by_key, partition, chunk };
+
+// Ordenar por múltiples campos
+let ordenadas = order_by(LIQUIDACIONES, [
+    ["sueldo_liquido", "desc"],
+    ["apellido",       "asc"]
+]);
+
+// Agrupar empleados por departamento
+let por_depto = group_by_key(EMPLEADOS, "departamento");
+// { "RRHH": [...], "TI": [...], "Ventas": [...] }
+
+// Separar los que tienen bono de los que no
+let separados = partition(EMPLEADOS, |e| =&gt; e.bono &gt; 0);
+let con_bono  = separados[0];
+let sin_bono  = separados[1];
+
+// Procesar en lotes de 50
+let lotes = chunk(EMPLEADOS, 50);
+foreach lote in lotes {
+    // procesar lote...
+}
+</code></pre>
+<blockquote>
+<p><code>group_by</code> (con función) también está disponible como HOF — no requiere import explícito cuando se usa con arrays.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="stdsearch"><a class="header" href="#stdsearch">std.search</a></h1>
+<pre><code class="language-caper">use std.search.{ find_all, find_index, in_range, fuzzy };
+</code></pre>
+<h2 id="funciones-10"><a class="header" href="#funciones-10">Funciones</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Función</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>binary_search(arr, val)</code></td><td>Búsqueda binaria en array ordenado → índice o <code>-1</code></td></tr>
+<tr><td><code>find_all(arr, fn)</code></td><td>Todos los elementos que cumplen el predicado</td></tr>
+<tr><td><code>find_index(arr, fn)</code></td><td>Índice del primer elemento que cumple</td></tr>
+<tr><td><code>in_range(val, min, max)</code></td><td><code>true</code> si <code>min &lt;= val &lt;= max</code></td></tr>
+<tr><td><code>search(arr, val)</code></td><td>Búsqueda lineal → índice o <code>-1</code></td></tr>
+<tr><td><code>fuzzy(s, pattern, threshold)</code></td><td>Similitud entre strings (0.0 a 1.0)</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="ejemplos-10"><a class="header" href="#ejemplos-10">Ejemplos</a></h2>
+<pre><code class="language-caper">use std.search.{ find_all, find_index, in_range, fuzzy };
+
+let empleados_con_bono = find_all(EMPLEADOS, |e| =&gt; e.bono &gt; 0);
+
+let tramo_medio = find_all(EMPLEADOS, |e| =&gt;
+    in_range(e.sueldo, 500_000, 1_500_000)
+);
+
+// Índice del primer empleado con antigüedad &gt; 5 años
+let idx = find_index(EMPLEADOS, |e| =&gt; e.antiguedad &gt; 5);
+
+// Búsqueda aproximada de nombre (para tolerancia a errores ortográficos)
+let similitud = fuzzy("Juan Perez", "Juan Pérez", 0.8);   // true si similitud &gt;= 0.8
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="stdrand"><a class="header" href="#stdrand">std.rand</a></h1>
+<pre><code class="language-caper">use std.rand.{ seed, rand_int, rand_sample, uuid };
+</code></pre>
+<h2 id="funciones-11"><a class="header" href="#funciones-11">Funciones</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Función</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>rand()</code></td><td>Número aleatorio entre 0.0 y 1.0</td></tr>
+<tr><td><code>rand_int(min, max)</code></td><td>Entero aleatorio en <code>[min, max]</code></td></tr>
+<tr><td><code>rand_float(min, max)</code></td><td>Decimal aleatorio en <code>[min, max]</code></td></tr>
+<tr><td><code>rand_item(arr)</code></td><td>Elemento aleatorio de un array</td></tr>
+<tr><td><code>rand_sample(arr, n)</code></td><td><code>n</code> elementos aleatorios sin repetición</td></tr>
+<tr><td><code>shuffle(arr)</code></td><td>Retorna copia del array con orden aleatorio</td></tr>
+<tr><td><code>seed(n)</code></td><td>Fija la semilla aleatoria — para reproducibilidad</td></tr>
+<tr><td><code>uuid()</code></td><td>Genera un UUID v4 como string</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="ejemplos-11"><a class="header" href="#ejemplos-11">Ejemplos</a></h2>
+<pre><code class="language-caper">use std.rand.{ seed, rand_sample, uuid, rand_int };
+
+// Tests reproducibles — misma semilla, mismo resultado
+seed(42);
+let muestra = rand_sample(EMPLEADOS, 10);   // siempre los mismos 10
+
+// ID único de proceso
+let run_id = uuid();   // "a7f3c821-4e2b-4d91-b3f1-9c2e8f0d5a61"
+
+// Simulación de variación en tests
+let variacion = rand_int(-5, 5);   // entero aleatorio entre -5 y 5
+</code></pre>
+<blockquote>
+<p>En scripts de producción, evita <code>rand()</code> sin <code>seed()</code> si necesitas reproducibilidad. Los tests de liquidaciones deben ser deterministas.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="stdxml"><a class="header" href="#stdxml">std.xml</a></h1>
+<pre><code class="language-caper">use std.xml.{ xml_encode, xml_encode_opts, xml_decode, xml_valid };
+</code></pre>
+<h2 id="funciones-12"><a class="header" href="#funciones-12">Funciones</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Función</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>xml_encode(v, root)</code></td><td>Serializa un objeto/array a XML con el elemento raíz indicado</td></tr>
+<tr><td><code>xml_encode_opts(v, root, opts)</code></td><td>Igual con opciones: <code>indent</code>, <code>namespace</code>, <code>declaration</code></td></tr>
+<tr><td><code>xml_decode(s)</code></td><td>Parsea XML → objeto AlcaparraLang</td></tr>
+<tr><td><code>xml_valid(s)</code></td><td><code>true</code> si el string es XML bien formado</td></tr>
+<tr><td><code>xml_get(s, xpath)</code></td><td>Extrae un valor usando XPath simple</td></tr>
+<tr><td><code>xml_get_all(s, xpath)</code></td><td>Extrae array de coincidencias XPath</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="ejemplos-12"><a class="header" href="#ejemplos-12">Ejemplos</a></h2>
+<pre><code class="language-caper">use std.xml.{ xml_encode_opts, xml_decode, xml_valid };
+
+// Generar XML para integración con SII o Previred
+let documento = {
+    RUT:     RUT,
+    Monto:   TOTAL_LIQUIDO,
+    Periodo: PERIODO
+};
+
+let xml = xml_encode_opts(documento, "Liquidacion", {
+    indent:      true,
+    declaration: true,
+    namespace:   "http://sii.cl/schema/dt"
+});
+
+emit xml;
+/*
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;Liquidacion xmlns="http://sii.cl/schema/dt"&gt;
+  &lt;RUT&gt;12.345.678-9&lt;/RUT&gt;
+  &lt;Monto&gt;850000&lt;/Monto&gt;
+  &lt;Periodo&gt;2026-04&lt;/Periodo&gt;
+&lt;/Liquidacion&gt;
+*/
+
+// Leer XML recibido
+let obj = xml_decode(XML_INPUT);
+let rut = obj.RUT;
+</code></pre>
+<blockquote>
+<p>El elemento raíz (<code>root</code>) es obligatorio — a diferencia de JSON, XML siempre necesita un elemento contenedor. <code>xml_encode</code> lanzará <code>TYPE_ERROR</code> si no se especifica.</p>
+</blockquote>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="stdyaml"><a class="header" href="#stdyaml">std.yaml</a></h1>
+<pre><code class="language-caper">use std.yaml.{ yaml_encode, yaml_decode, yaml_valid };
+</code></pre>
+<h2 id="funciones-13"><a class="header" href="#funciones-13">Funciones</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Función</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>yaml_encode(v)</code></td><td>Serializa cualquier valor a YAML</td></tr>
+<tr><td><code>yaml_encode_opts(v, opts)</code></td><td>Con opciones: <code>indent</code> (default 2), <code>flow_style</code></td></tr>
+<tr><td><code>yaml_decode(s)</code></td><td>Parsea YAML → valor AlcaparraLang</td></tr>
+<tr><td><code>yaml_valid(s)</code></td><td><code>true</code> si el string es YAML válido</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="ejemplos-13"><a class="header" href="#ejemplos-13">Ejemplos</a></h2>
+<pre><code class="language-caper">use std.yaml.{ yaml_encode, yaml_decode };
+
+let config = {
+    servicio:    "alcaparra-service",
+    version:     "1.0.0",
+    parametros:  { uf: UF, utm: UTM }
+};
+
+emit yaml_encode(config);
+/*
+servicio: alcaparra-service
+version: 1.0.0
+parametros:
+  uf: 38234.56
+  utm: 66157
+*/
+
+// Leer configuración YAML inyectada como string
+let cfg = yaml_decode(CONFIG_YAML ?? "{}");
+let tasa = cfg.tasa_bono ?? 0;
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="stdtime"><a class="header" href="#stdtime">std.time</a></h1>
+<pre><code class="language-caper">use std.time.{ timestamp, elapsed_ms };
+</code></pre>
+<h2 id="funciones-14"><a class="header" href="#funciones-14">Funciones</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Función</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>timestamp()</code></td><td>Unix timestamp actual en segundos</td></tr>
+<tr><td><code>timestamp_ms()</code></td><td>Unix timestamp actual en milisegundos</td></tr>
+<tr><td><code>from_timestamp(ts)</code></td><td>Convierte unix timestamp → string fecha ISO</td></tr>
+<tr><td><code>from_timestamp_ms(ts)</code></td><td>Igual desde milisegundos</td></tr>
+<tr><td><code>to_timestamp(s)</code></td><td>Convierte string fecha ISO → unix timestamp</td></tr>
+<tr><td><code>time_now()</code></td><td>Hora actual como string <code>"HH:MM:SS"</code></td></tr>
+<tr><td><code>time_format(ts, fmt)</code></td><td>Formatea un timestamp con formato personalizado</td></tr>
+<tr><td><code>elapsed_ms(ts_inicio)</code></td><td>Milisegundos transcurridos desde <code>ts_inicio</code></td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="ejemplos-14"><a class="header" href="#ejemplos-14">Ejemplos</a></h2>
+<pre><code class="language-caper">use std.time.{ timestamp, elapsed_ms, from_timestamp };
+
+// Medir tiempo de cálculo (útil en scripts complejos)
+let inicio  = timestamp();
+// ... lógica de cálculo ...
+let duracion = elapsed_ms(inicio);
+
+emit {
+    resultado:    RESULTADO,
+    tiempo_ms:    duracion
+};
+
+// Convertir timestamp a fecha legible
+let fecha = from_timestamp(1713225600);   // "2024-04-16T00:00:00Z"
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="cli--caper"><a class="header" href="#cli--caper">CLI — caper</a></h1>
+<h2 id="instalación-1"><a class="header" href="#instalación-1">Instalación</a></h2>
+<pre><code class="language-bash">cargo install alcaparra-lang
+</code></pre>
+<h2 id="comandos"><a class="header" href="#comandos">Comandos</a></h2>
+<h3 id="run"><a class="header" href="#run">run</a></h3>
+<p>Ejecuta un script <code>.caper</code>:</p>
+<pre><code class="language-bash">caper run script.caper
+caper run script.caper --context '{"SUELDO": 850000, "TASA": 0.1157}'
+caper run script.caper --context-file contexto.json
+</code></pre>
+<p>Modo proyecto (lee <code>entry</code> y <code>context</code> desde <code>.capercfg</code>):</p>
+<pre><code class="language-bash">caper run
+</code></pre>
+<h3 id="validate"><a class="header" href="#validate">validate</a></h3>
+<p>Valida sintaxis sin ejecutar. No requiere contexto:</p>
+<pre><code class="language-bash">caper validate script.caper
+</code></pre>
+<h3 id="repl"><a class="header" href="#repl">repl</a></h3>
+<p>REPL interactivo:</p>
+<pre><code class="language-bash">caper repl
+</code></pre>
+<p>Con historial persistente y autocompletado (requiere feature <code>repl</code>):</p>
+<pre><code class="language-bash">caper repl   # usa ~/.caper_history
+</code></pre>
+<h3 id="new"><a class="header" href="#new">new</a></h3>
+<p>Crea un nuevo proyecto o paquete:</p>
+<pre><code class="language-bash">caper new mi-proyecto          # proyecto con .capercfg + main.caper
+caper new mi-lib --package     # paquete con pkg.capercfg + lib.caper
+</code></pre>
+<h3 id="install"><a class="header" href="#install">install</a></h3>
+<p>Instala dependencias declaradas en <code>.capercfg</code> o una dependencia específica:</p>
+<pre><code class="language-bash">caper install                                          # instala todas las deps del .capercfg
+caper install /ruta/local/mi-paquete                  # dep local
+caper install git+https://github.com/org/pkg           # desde git
+caper install git+https://github.com/org/pkg --tag v1  # tag específico
+</code></pre>
+<h3 id="help"><a class="header" href="#help">help</a></h3>
+<pre><code class="language-bash">caper help
+caper help run
+caper help install
+</code></pre>
+<h3 id="version"><a class="header" href="#version">version</a></h3>
+<pre><code class="language-bash">caper version
+# AlcaparraLang 0.1.0
+</code></pre>
+<h2 id="opciones-globales"><a class="header" href="#opciones-globales">Opciones globales</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Opción</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>--context '{"K": V}'</code></td><td>Contexto JSON inline</td></tr>
+<tr><td><code>--context-file ruta.json</code></td><td>Contexto desde archivo</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="formato-de-salida"><a class="header" href="#formato-de-salida">Formato de salida</a></h2>
+<p>La salida de <code>caper run</code> es JSON por stdout:</p>
+<pre><code class="language-json">{ "status": "ok",    "result": { "liquido": 751655 } }
+{ "status": "error", "error": { "type": "TYPE_ERROR", "message": "...", "line": 5 } }
+</code></pre>
+<p>Los errores de sintaxis muestran diagnóstico estilo Rust:</p>
+<pre><code>error[SYNTAX_ERROR]: expected ';' at 5:12
+  --&gt; script.caper:5:12
+   |
+ 5 |     let x = foo(bar
+   |                 ^
+   |
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="ejemplo-completo--liquidación-standard"><a class="header" href="#ejemplo-completo--liquidación-standard">Ejemplo completo — Liquidación Standard</a></h1>
+<p>Script de liquidación mensual básica con gratificación garantizada. Cubre el flujo completo de haberes, descuentos previsionales y cálculo de sueldo líquido.</p>
+<h2 id="contexto-requerido"><a class="header" href="#contexto-requerido">Contexto requerido</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Variable</th><th>Tipo</th><th>Descripción</th></tr>
+</thead>
+<tbody>
+<tr><td><code>SUELDO_BASE</code></td><td>número</td><td>Sueldo base mensual</td></tr>
+<tr><td><code>DIAS_TRABAJADOS</code></td><td>número</td><td>Días trabajados en el mes</td></tr>
+<tr><td><code>DIAS_HABILES</code></td><td>número</td><td>Días hábiles totales del mes</td></tr>
+<tr><td><code>HORAS_EXTRA_MONTO</code></td><td>número</td><td>Monto calculado de horas extra</td></tr>
+<tr><td><code>AFP_TASA</code></td><td>número</td><td>Tasa AFP del trabajador (ej. <code>0.1157</code>)</td></tr>
+<tr><td><code>FONASA_TASA</code></td><td>número</td><td>Tasa de salud (ej. <code>0.07</code>)</td></tr>
+<tr><td><code>FONASA_MINIMO</code></td><td>número</td><td>Piso mínimo de cotización salud</td></tr>
+<tr><td><code>TIPO_GRATIFICACION</code></td><td>string</td><td><code>"garantizada"</code> u otro</td></tr>
+<tr><td><code>MESES_ACUMULADOS</code></td><td>número</td><td>Meses trabajados en el año (para gratificación)</td></tr>
+<tr><td><code>TIPO_CONTRATO</code></td><td>string</td><td><code>"indefinido"</code>, <code>"plazo_fijo"</code> u otro</td></tr>
+<tr><td><code>UF</code></td><td>número</td><td>Valor UF del período</td></tr>
+<tr><td><code>UTM</code></td><td>número</td><td>Valor UTM del período</td></tr>
+</tbody>
+</table>
+</div>
+<h2 id="script"><a class="header" href="#script">Script</a></h2>
+<pre><code class="language-caper">// liquidacion_standard.caper
+// Liquidación mensual con gratificación garantizada.
+
+use std.math.{ max, min, round };
+use std.arrays.{ sum };
+
+header {
+    name:    "liquidacion_standard";
+    version: "1.0.0";
+
+    // Topes y tasas legales — no sobreescribibles por configuración de tenant
+    const TOPE_IMPONIBLE_UF          = 81.0;
+    const TOPE_GRATIFICACION_MENSUAL = 4.75;
+    const TASA_CESANTIA_INDEFINIDO   = 0.006;
+    const TASA_CESANTIA_PLAZO_FIJO   = 0.011;
+}
+
+main {
+    // -- Validación de contexto mínimo --
+    let sueldo_base = SUELDO_BASE ?? 0;
+    if sueldo_base &lt;= 0 {
+        emit { error: true, codigo: "SUELDO_BASE_INVALIDO" };
+    }
+
+    // -- Tope imponible --
+    let tope_pesos     = TOPE_IMPONIBLE_UF * UF;
+    let base_imponible = min(sueldo_base, tope_pesos);
+
+    // -- Haberes --
+    let factor_asistencia = DIAS_TRABAJADOS / DIAS_HABILES;
+    let bono_asistencia   = round(sueldo_base * factor_asistencia * 0.05, 0);
+
+    let gratificacion = if TIPO_GRATIFICACION == "garantizada" {
+        let proporcional = sueldo_base * 0.25 * MESES_ACUMULADOS / 12;
+        round(min(proporcional, TOPE_GRATIFICACION_MENSUAL * UTM / 12), 0)
+    } else {
+        0
+    };
+
+    let horas_extra  = HORAS_EXTRA_MONTO ?? 0;
+    let haberes      = [sueldo_base, bono_asistencia, gratificacion, horas_extra];
+    let sueldo_bruto = sum(haberes);
+
+    // -- Descuentos previsionales --
+    let desc_afp   = round(base_imponible * AFP_TASA, 0);
+    let desc_salud = round(max(base_imponible * FONASA_TASA, FONASA_MINIMO), 0);
+
+    let desc_cesantia = match TIPO_CONTRATO {
+        "indefinido" =&gt; round(base_imponible * TASA_CESANTIA_INDEFINIDO, 0),
+        "plazo_fijo" =&gt; round(base_imponible * TASA_CESANTIA_PLAZO_FIJO, 0),
+        _            =&gt; 0
+    };
+
+    let descuentos       = [desc_afp, desc_salud, desc_cesantia];
+    let total_descuentos = sum(descuentos);
+
+    // -- Resultado --
+    emit {
+        sueldo_bruto:     sueldo_bruto,
+        total_descuentos: total_descuentos,
+        sueldo_liquido:   sueldo_bruto - total_descuentos,
+        detalle: {
+            haberes: {
+                sueldo_base:     sueldo_base,
+                bono_asistencia: bono_asistencia,
+                gratificacion:   gratificacion,
+                horas_extra:     horas_extra
+            },
+            descuentos: {
+                afp:      desc_afp,
+                salud:    desc_salud,
+                cesantia: desc_cesantia
+            }
+        }
+    };
+}
+</code></pre>
+<h2 id="ejecutar"><a class="header" href="#ejecutar">Ejecutar</a></h2>
+<pre><code class="language-bash">caper run liquidacion_standard.caper --context '{
+    "SUELDO_BASE":      850000,
+    "DIAS_TRABAJADOS":  22,
+    "DIAS_HABILES":     22,
+    "HORAS_EXTRA_MONTO": 0,
+    "AFP_TASA":         0.1157,
+    "FONASA_TASA":      0.07,
+    "FONASA_MINIMO":    30000,
+    "TIPO_GRATIFICACION": "garantizada",
+    "MESES_ACUMULADOS": 3,
+    "TIPO_CONTRATO":    "indefinido",
+    "UF":               38234,
+    "UTM":              66157
+}'
+</code></pre>
+<h2 id="resultado-esperado"><a class="header" href="#resultado-esperado">Resultado esperado</a></h2>
+<pre><code class="language-json">{
+    "sueldo_bruto": 907125,
+    "total_descuentos": 157979,
+    "sueldo_liquido": 749146,
+    "detalle": {
+        "haberes": {
+            "sueldo_base": 850000,
+            "bono_asistencia": 42500,
+            "gratificacion": 14625,
+            "horas_extra": 0
+        },
+        "descuentos": {
+            "afp": 98345,
+            "salud": 59500,
+            "cesantia": 5100
+        }
+    }
+}
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+        <script>
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+
+
+    </div>
+    </body>
+</html>
