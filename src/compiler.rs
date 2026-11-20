@@ -746,23 +746,52 @@ impl Compiler {
         let jf = self.emit(Instruction::JumpFalse(0));
         self.emit(Instruction::Pop);
 
-        // rama then — debe dejar un valor en el stack via Emit en el bloque
-        self.emit(Instruction::Enter);
-        for s in then_block { self.compile_stmt(s)?; }
-        self.emit(Instruction::Leave);
+        // Cada rama deja exactamente un valor en el stack: el de su expresión final.
+        self.compile_block_value(then_block, None)?;
         let skip_else = self.emit(Instruction::Jump(0));
 
         let else_addr = self.here();
         self.patch(jf, Instruction::JumpFalse(else_addr));
         self.emit(Instruction::Pop);
 
-        // rama else
-        self.emit(Instruction::Enter);
-        for s in else_block { self.compile_stmt(s)?; }
-        self.emit(Instruction::Leave);
+        self.compile_block_value(else_block, None)?;
 
         let end = self.here();
         self.patch(skip_else, Instruction::Jump(end));
+        Ok(())
+    }
+
+    /// Compila un bloque que **tiene valor**: todo menos la última sentencia se
+    /// ejecuta normal, y si la última es una expresión, su valor queda en el
+    /// stack y es el valor del bloque. Si el bloque no termina en una
+    /// expresión, vale `null`.
+    ///
+    /// Antes estos bloques se compilaban como sentencias sueltas: `ExprStmt`
+    /// emite un `Pop`, así que la rama no dejaba nada y el `if` como expresión
+    /// hacía reventar la VM con «pop on empty stack».
+    fn compile_block_value(
+        &mut self,
+        block: &[Stmt],
+        bind_error: Option<&str>,
+    ) -> Result<(), CaperError> {
+        self.emit(Instruction::Enter);
+
+        if let Some(nombre) = bind_error {
+            self.emit(Instruction::LetBind(nombre.to_string(), 0));
+        }
+
+        match block.split_last() {
+            Some((Stmt::ExprStmt(tail), previas)) => {
+                for s in previas { self.compile_stmt(s)?; }
+                self.compile_expr(tail)?; // sin Pop: este es el valor del bloque
+            }
+            _ => {
+                for s in block { self.compile_stmt(s)?; }
+                self.emit(Instruction::Const(Value::Null));
+            }
+        }
+
+        self.emit(Instruction::Leave);
         Ok(())
     }
 
@@ -891,13 +920,11 @@ impl Compiler {
         error_var: &str,
         catch_block: &[Stmt],
     ) -> Result<(), CaperError> {
-        // Misma estructura que la variante de sentencia, pero necesitamos un resultado de valor.
-        // La instrucción Emit dentro de expresiones if/match empuja un valor.
+        // Misma estructura que la variante de sentencia, pero cada bloque tiene
+        // que dejar un valor: el de su expresión final.
         let try_push_addr = self.emit(Instruction::TryPush(0));
 
-        self.emit(Instruction::Enter);
-        for s in try_block { self.compile_stmt(s)?; }
-        self.emit(Instruction::Leave);
+        self.compile_block_value(try_block, None)?;
         self.emit(Instruction::TryPop);
 
         let skip_catch = self.emit(Instruction::Jump(0));
@@ -905,10 +932,7 @@ impl Compiler {
         let catch_addr = self.here();
         self.patch(try_push_addr, Instruction::TryPush(catch_addr));
 
-        self.emit(Instruction::Enter);
-        self.emit(Instruction::LetBind(error_var.to_string(), 0));
-        for s in catch_block { self.compile_stmt(s)?; }
-        self.emit(Instruction::Leave);
+        self.compile_block_value(catch_block, Some(error_var))?;
 
         let end = self.here();
         self.patch(skip_catch, Instruction::Jump(end));

@@ -190,6 +190,13 @@ impl Parser {
     // --- Sentencias ---
 
     fn parse_stmt(&mut self) -> Result<Stmt, CaperError> {
+        self.parse_stmt_inner(false)
+    }
+
+    /// `allow_tail` habilita la **expresión final** de un bloque con valor: la
+    /// última expresión puede venir sin `;` cuando lo que sigue es `}`. En
+    /// cualquier otra posición el `;` sigue siendo obligatorio.
+    fn parse_stmt_inner(&mut self, allow_tail: bool) -> Result<Stmt, CaperError> {
         let line = self.peek_line();
         let col  = self.peek_col();
 
@@ -197,13 +204,16 @@ impl Parser {
             Token::Let      => self.parse_let(false),
             Token::Var      => self.parse_let(true),
             Token::Emit     => self.parse_emit(),
-            Token::If       => self.parse_if(),
+            // Un `if` o un `try` en la posición final de un bloque con valor son
+            // expresiones, pero no se distinguen de su versión sentencia por el
+            // primer token: se intenta como expresión y se retrocede si no calza.
+            Token::If       => self.parse_if_or_tail(allow_tail),
             Token::While    => self.parse_while(),
             Token::Foreach  => self.parse_foreach(),
             Token::Break    => { self.advance(); self.eat(&Token::Semicolon)?; Ok(Stmt::Break { line }) }
             Token::Continue => { self.advance(); self.eat(&Token::Semicolon)?; Ok(Stmt::Continue { line }) }
             Token::Fn       => self.parse_fn_decl(),
-            Token::Try      => self.parse_try_catch_stmt(),
+            Token::Try      => self.parse_try_or_tail(allow_tail),
             Token::Use      => self.parse_use(),
             Token::Throw    => self.parse_throw(),
             _ => {
@@ -220,10 +230,51 @@ impl Parser {
                     return Ok(Stmt::Assign { target, value, line });
                 }
 
+                // Expresión final de un bloque con valor: sin `;` y con `}` detrás.
+                if allow_tail && self.at(&Token::RBrace) {
+                    return Ok(Stmt::ExprStmt(expr));
+                }
+
                 self.eat(&Token::Semicolon)?;
                 Ok(Stmt::ExprStmt(expr))
             }
         }
+    }
+
+    fn parse_if_or_tail(&mut self, allow_tail: bool) -> Result<Stmt, CaperError> {
+        if allow_tail {
+            let marca = self.pos;
+            if let Ok(expr) = self.parse_if_expr() {
+                if self.at(&Token::RBrace) {
+                    return Ok(Stmt::ExprStmt(expr));
+                }
+            }
+            self.pos = marca;
+        }
+        self.parse_if()
+    }
+
+    fn parse_try_or_tail(&mut self, allow_tail: bool) -> Result<Stmt, CaperError> {
+        if allow_tail {
+            let marca = self.pos;
+            if let Ok(expr) = self.parse_try_catch_expr() {
+                if self.at(&Token::RBrace) {
+                    return Ok(Stmt::ExprStmt(expr));
+                }
+            }
+            self.pos = marca;
+        }
+        self.parse_try_catch_stmt()
+    }
+
+    /// Cuerpo de un bloque que **tiene valor**. El valor es el de su expresión
+    /// final; si no termina en una expresión, el bloque vale `null`.
+    fn parse_block_expr(&mut self) -> Result<Vec<Stmt>, CaperError> {
+        let mut stmts = vec![];
+        while !self.at(&Token::RBrace) && !self.at(&Token::Eof) {
+            stmts.push(self.parse_stmt_inner(true)?);
+        }
+        Ok(stmts)
     }
 
     fn parse_let(&mut self, mutable: bool) -> Result<Stmt, CaperError> {
@@ -340,12 +391,12 @@ impl Parser {
         let line = self.peek_line();
         self.advance();
         self.eat(&Token::LBrace)?;
-        let try_block = self.parse_stmts_until(&Token::RBrace)?;
+        let try_block = self.parse_block_expr()?;
         self.eat(&Token::RBrace)?;
         self.eat(&Token::Catch)?;
         let error_var = self.eat_ident()?;
         self.eat(&Token::LBrace)?;
-        let catch_block = self.parse_stmts_until(&Token::RBrace)?;
+        let catch_block = self.parse_block_expr()?;
         self.eat(&Token::RBrace)?;
         Ok(Stmt::TryCatch { try_block, error_var, catch_block, line })
     }
@@ -686,12 +737,21 @@ impl Parser {
         self.advance(); // consumir `if`
         let condition = self.parse_expr()?;
         self.eat(&Token::LBrace)?;
-        let then_block = self.parse_stmts_until(&Token::RBrace)?;
+        let then_block = self.parse_block_expr()?;
         self.eat(&Token::RBrace)?;
         self.eat(&Token::Else)?;
-        self.eat(&Token::LBrace)?;
-        let else_block = self.parse_stmts_until(&Token::RBrace)?;
-        self.eat(&Token::RBrace)?;
+
+        // `else if` encadena otra expresión `if` como rama else, para no
+        // obligar a anidar llaves por cada tramo.
+        let else_block = if self.at(&Token::If) {
+            vec![Stmt::ExprStmt(self.parse_if_expr()?)]
+        } else {
+            self.eat(&Token::LBrace)?;
+            let bloque = self.parse_block_expr()?;
+            self.eat(&Token::RBrace)?;
+            bloque
+        };
+
         Ok(Expr::IfExpr {
             condition: Box::new(condition),
             then_block,
@@ -746,12 +806,12 @@ impl Parser {
         let line = self.peek_line();
         self.advance();
         self.eat(&Token::LBrace)?;
-        let try_block = self.parse_stmts_until(&Token::RBrace)?;
+        let try_block = self.parse_block_expr()?;
         self.eat(&Token::RBrace)?;
         self.eat(&Token::Catch)?;
         let error_var = self.eat_ident()?;
         self.eat(&Token::LBrace)?;
-        let catch_block = self.parse_stmts_until(&Token::RBrace)?;
+        let catch_block = self.parse_block_expr()?;
         self.eat(&Token::RBrace)?;
         Ok(Expr::TryCatchExpr { try_block, error_var, catch_block, line })
     }

@@ -2164,3 +2164,119 @@ fn sentencias_antes_de_main_se_ejecutan_antes() {
     "#;
     assert_eq!(run(src, ctx(&[])), num(dec!(2)));
 }
+
+// ---------------------------------------------------------------------------
+// Regresión: bloques con valor (`if` y `try/catch` como expresión)
+//
+// El compilador compilaba las ramas como sentencias sueltas, y `ExprStmt` emite
+// un `Pop`: la rama no dejaba nada en el stack y la VM moría con «pop on empty
+// stack». Ahora la expresión final del bloque es su valor.
+// ---------------------------------------------------------------------------
+
+#[test]
+fn if_como_expresion_sin_punto_y_coma_final() {
+    let src = r#"
+        let activo = true;
+        let etiqueta = if activo { "activo" } else { "inactivo" };
+        emit etiqueta;
+    "#;
+    assert_eq!(run(src, ctx(&[])), s("activo"));
+}
+
+#[test]
+fn if_como_expresion_con_punto_y_coma_final() {
+    let src = r#"let e = if false { "si"; } else { "no"; }; emit e;"#;
+    assert_eq!(run(src, ctx(&[])), s("no"));
+}
+
+#[test]
+fn if_como_expresion_encadena_else_if() {
+    let src = r#"
+        fn tramo(m) {
+            emit if m >= 20000000 { "alto" } else if m >= 5000000 { "medio" } else { "bajo" };
+        }
+        emit [tramo(25000000), tramo(7350000), tramo(2000000)];
+    "#;
+    assert_eq!(run(src, ctx(&[])), Value::Array(vec![s("alto"), s("medio"), s("bajo")]));
+}
+
+#[test]
+fn bloque_con_sentencias_antes_de_la_expresion_final() {
+    let src = r#"let x = if true { let a = 2; let b = 3; a * b } else { 0 }; emit x;"#;
+    assert_eq!(run(src, ctx(&[])), num(dec!(6)));
+}
+
+#[test]
+fn bloque_sin_expresion_final_vale_null() {
+    let src = r#"var y = 0; let x = if true { y = 1; } else { 2 }; emit [x, y];"#;
+    assert_eq!(run(src, ctx(&[])), Value::Array(vec![Value::Null, num(dec!(1))]));
+}
+
+#[test]
+fn if_como_expresion_dentro_de_un_objeto() {
+    let src = r#"let n = 5; emit { par: if n % 2 == 0 { "si" } else { "no" }, doble: n * 2 };"#;
+    assert_eq!(run(src, ctx(&[])), obj(&[("par", s("no")), ("doble", num(dec!(10)))]));
+}
+
+#[test]
+fn try_catch_como_expresion_devuelve_la_rama_catch() {
+    let src = r#"let r = try { 1 / 0 } catch e { "cayo: " + e.code }; emit r;"#;
+    assert_eq!(run(src, ctx(&[])), s("cayo: DIVISION_BY_ZERO"));
+}
+
+#[test]
+fn try_catch_como_expresion_devuelve_la_rama_try() {
+    let src = r#"let r = try { 6 * 7 } catch e { 0 }; emit r;"#;
+    assert_eq!(run(src, ctx(&[])), num(dec!(42)));
+}
+
+#[test]
+fn el_punto_y_coma_sigue_siendo_obligatorio_entre_sentencias() {
+    // La expresión final de un bloque con valor es la única posición donde el
+    // `;` se puede omitir. En cualquier otra sigue siendo obligatorio.
+    assert!(run_ok("let x = 1 let y = 2; emit x;", ctx(&[])).is_err());
+    assert!(run_ok("let x = if true { 1 2 } else { 0 }; emit x;", ctx(&[])).is_err());
+}
+
+#[test]
+fn if_anidado_como_valor_final_de_un_bloque() {
+    // Un `if` en posición de sentencia se parsea como sentencia; en la posición
+    // final de un bloque con valor tiene que leerse como expresión.
+    let src = r#"
+        fn tramo(monto) {
+            emit if monto >= 20000000 {
+                "alto"
+            } else if monto >= 5000000 {
+                let base = monto - 5000000;
+                if base > 1000000 { "medio-alto" } else { "medio" }
+            } else {
+                "bajo"
+            };
+        }
+        emit [tramo(25000000), tramo(7350000), tramo(5500000), tramo(2000000)];
+    "#;
+    assert_eq!(
+        run(src, ctx(&[])),
+        Value::Array(vec![s("alto"), s("medio-alto"), s("medio"), s("bajo")]),
+    );
+}
+
+#[test]
+fn if_sentencia_sin_else_dentro_de_un_bloque_con_valor() {
+    // El retroceso no puede romper el `if` sentencia, que no lleva `else`.
+    let src = r#"
+        let r = if true {
+            var n = 0;
+            if 1 > 0 { n = 5; }
+            n * 2
+        } else { 0 };
+        emit r;
+    "#;
+    assert_eq!(run(src, ctx(&[])), num(dec!(10)));
+}
+
+#[test]
+fn try_como_valor_final_de_un_bloque() {
+    let src = r#"let r = if true { try { 1 / 0 } catch e { -1 } } else { 0 }; emit r;"#;
+    assert_eq!(run(src, ctx(&[])), num(dec!(-1)));
+}
