@@ -48,6 +48,20 @@ struct CallFrame {
     saved_program:    Option<Rc<CompiledProgram>>,
     /// Profundidad del scope al entrar al frame (para deshacer con Leave).
     base_scope_depth: usize,
+    /// Profundidad de `iter_stack` al entrar al frame.
+    ///
+    /// Un `emit` dentro de un `foreach` sale de la función sin ejecutar el `IterDone`
+    /// del bucle, y su `IterState` queda arriba de la pila. Sin esto, el `IterNext`
+    /// de quien llamó toma ese iterador ajeno —ya agotado— y termina su propio bucle
+    /// en silencio, sin error y con un resultado incorrecto.
+    base_iter_depth:  usize,
+    /// Profundidad de `obj_stack` al entrar al frame. Mismo problema que el anterior
+    /// para un `emit` que escapa de la construcción de un objeto.
+    base_obj_depth:   usize,
+    /// Contador de iteraciones del bucle de quien llama, que `IterDone` pone en cero.
+    /// Un `emit` temprano se salta ese `IterDone`, así que el contador se restaura acá
+    /// o el bucle de afuera hereda las vueltas del de adentro.
+    saved_loop_iters: usize,
 }
 
 // ---------------------------------------------------------------------------
@@ -147,6 +161,9 @@ impl Executor {
             saved_scope:      None,
             saved_program:    None,
             base_scope_depth: self.scope.depth(),
+            base_iter_depth:  self.iter_stack.len(),
+            base_obj_depth:   self.obj_stack.len(),
+            saved_loop_iters: self.loop_iters,
         });
 
         loop {
@@ -512,6 +529,14 @@ impl Executor {
         // Restaurar scope y programa previos a la llamada
         if let Some(saved) = frame.saved_scope    { self.scope   = saved; }
         if let Some(saved) = frame.saved_program  { self.program = saved; }
+
+        // Deshacer los bucles y los objetos que esta llamada dejó a medio terminar.
+        // El camino de la excepción ya hacía esto (ver `handle_error`); el retorno
+        // normal no, y por eso un `emit` dentro de un `foreach` cortaba el bucle de
+        // quien llamaba.
+        self.iter_stack.truncate(frame.base_iter_depth);
+        self.obj_stack.truncate(frame.base_obj_depth);
+        self.loop_iters = frame.saved_loop_iters;
     }
 
     // -----------------------------------------------------------------------
@@ -571,6 +596,9 @@ impl Executor {
                     saved_scope: Some(saved_scope),
                     saved_program,
                     base_scope_depth,
+                    base_iter_depth:  self.iter_stack.len(),
+                    base_obj_depth:   self.obj_stack.len(),
+                    saved_loop_iters: self.loop_iters,
                 });
                 Ok(())
             }
@@ -916,6 +944,9 @@ impl Executor {
                 saved_scope:      None,
                 saved_program:    None,
                 base_scope_depth: self.scope.depth(),
+                base_iter_depth:  self.iter_stack.len(),
+                base_obj_depth:   self.obj_stack.len(),
+                saved_loop_iters: self.loop_iters,
             });
         }
 

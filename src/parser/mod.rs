@@ -10,7 +10,7 @@
 //! Gramática (informal):
 //!
 //! ```text
-//! program     = use* header? main_block | stmt*
+//! program     = use* header? stmt* main_block?
 //! header      = "header" "{" header_field* "}"
 //! header_field = ident ":" literal ";" | "const" ident "=" expr ";"
 //! main_block  = "main" "{" stmt* "}"
@@ -113,17 +113,19 @@ impl Parser {
             header = Some(self.parse_header()?);
         }
 
-        // Si hay `main { }`, parsear como script estructurado
-        let body = if self.at(&Token::Main) {
+        // Sentencias previas a `main` — tipicamente declaraciones `fn` auxiliares.
+        // Antes el programa era `main_block | stmt*`, excluyentes: declarar una
+        // funcion arriba y despues abrir `main` fallaba con un error que apuntaba
+        // a `main`, que es justo donde no estaba el problema.
+        let mut body = self.parse_stmts_until(&Token::Main)?;
+
+        // `main { }` opcional. Lo que venga antes se ejecuta antes de su cuerpo.
+        if self.at(&Token::Main) {
             self.advance(); // consumir `main`
             self.eat(&Token::LBrace)?;
-            let stmts = self.parse_stmts_until(&Token::RBrace)?;
+            body.extend(self.parse_stmts_until(&Token::RBrace)?);
             self.eat(&Token::RBrace)?;
-            stmts
-        } else {
-            // Script inline — parsear sentencias hasta EOF
-            self.parse_stmts_until(&Token::Eof)?
-        };
+        }
 
         // Anteponer las sentencias use como Stmt::Use
         let mut all_stmts = uses;

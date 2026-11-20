@@ -291,7 +291,7 @@ valor ?? valor_por_defecto    // retorna valor_por_defecto cuando valor es null
 ### Control de flujo
 
 ```caper
-// if / else if / else — como sentencia o como expresión
+// if / else if / else — como sentencia
 if puntaje >= 90 {
     nota = "A";
 } else if puntaje >= 70 {
@@ -300,7 +300,12 @@ if puntaje >= 90 {
     nota = "C";
 }
 
-let etiqueta = if activo { "activo" } else { "inactivo" };
+// `if` es una sentencia. Para obtener un valor se usa `match` (más abajo),
+// que además encadena tramos con guards sin anidar.
+let etiqueta = match activo {
+    true => "activo",
+    _    => "inactivo"
+};
 
 // while
 while (i < 10) {

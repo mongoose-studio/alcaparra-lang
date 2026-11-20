@@ -2016,3 +2016,151 @@ fn import_not_found_returns_error() {
     assert!(result.is_err());
     assert_eq!(result.unwrap_err().code(), "IMPORT_NOT_FOUND");
 }
+
+// ---------------------------------------------------------------------------
+// Regresión: `emit` que escapa de un bucle dentro de una función
+//
+// `do_ret` restauraba el scope y el programa, pero no las pilas de iteradores y
+// de objetos. Un `emit` dentro de un `foreach` sale sin ejecutar el `IterDone`
+// del bucle, así que su `IterState` quedaba arriba de la pila y el `IterNext`
+// de quien llamaba tomaba ese iterador ajeno —ya agotado— y terminaba su propio
+// bucle. Sin error: resultado incorrecto en silencio.
+// ---------------------------------------------------------------------------
+
+#[test]
+fn emit_dentro_de_foreach_no_corta_el_bucle_de_quien_llama() {
+    let src = r#"
+        fn primero_par(xs) {
+            foreach x in xs { if x % 2 == 0 { emit x; } }
+            emit 0;
+        }
+        var a = [];
+        foreach lista in [[1, 2], [3, 4], [5, 6]] { a = [...a, primero_par(lista)]; }
+        emit a;
+    "#;
+    assert_eq!(
+        run(src, ctx(&[])),
+        Value::Array(vec![num(dec!(2)), num(dec!(4)), num(dec!(6))]),
+    );
+}
+
+#[test]
+fn emit_dentro_de_foreach_anidado_dos_niveles() {
+    let src = r#"
+        fn interna(xs) {
+            foreach x in xs { if x > 0 { emit x; } }
+            emit 0;
+        }
+        fn externa(xss) {
+            var total = 0;
+            foreach xs in xss { total = total + interna(xs); }
+            emit total;
+        }
+        var a = [];
+        foreach grupo in [[[1], [2]], [[3], [4]]] { a = [...a, externa(grupo)]; }
+        emit a;
+    "#;
+    assert_eq!(run(src, ctx(&[])), Value::Array(vec![num(dec!(3)), num(dec!(7))]));
+}
+
+#[test]
+fn emit_dentro_de_foreach_no_corrompe_un_objeto_en_construccion() {
+    let src = r#"
+        fn primero(xs) {
+            foreach x in xs { emit x; }
+            emit 0;
+        }
+        emit { a: primero([1, 2]), b: primero([3, 4]), c: primero([5, 6]) };
+    "#;
+    assert_eq!(
+        run(src, ctx(&[])),
+        obj(&[("a", num(dec!(1))), ("b", num(dec!(3))), ("c", num(dec!(5)))]),
+    );
+}
+
+#[test]
+fn emit_dentro_de_foreach_sobre_objeto_tampoco_corta_el_bucle() {
+    let src = r#"
+        fn primera_clave(mapa) {
+            foreach k, v in mapa { emit k; }
+            emit "";
+        }
+        var a = [];
+        foreach m in [{ x: 1 }, { y: 2 }, { z: 3 }] { a = [...a, primera_clave(m)]; }
+        emit a;
+    "#;
+    assert_eq!(run(src, ctx(&[])), Value::Array(vec![s("x"), s("y"), s("z")]));
+}
+
+#[test]
+fn emit_dentro_de_foreach_desde_un_hof() {
+    let src = r#"
+        use std.arrays.{ map };
+        fn primero(xs) {
+            foreach x in xs { emit x; }
+            emit 0;
+        }
+        var a = [];
+        foreach lista in [[1, 2], [3, 4]] {
+            a = [...a, map([lista], |l| => primero(l))[0]];
+        }
+        emit a;
+    "#;
+    assert_eq!(run(src, ctx(&[])), Value::Array(vec![num(dec!(1)), num(dec!(3))]));
+}
+
+#[test]
+fn el_contador_de_vueltas_no_se_hereda_entre_bucles() {
+    // `IterDone` pone `loop_iters` en cero y un `emit` temprano se lo salta. Si el
+    // contador no se restaura al volver, el bucle de afuera hereda las vueltas del
+    // de adentro y choca con LOOP_LIMIT antes de tiempo.
+    let src = r#"
+        fn primero(xs) {
+            foreach x in xs { emit x; }
+            emit 0;
+        }
+        var vueltas = 0;
+        foreach i in range(1, 2000) { vueltas = vueltas + primero([i]); }
+        emit vueltas;
+    "#;
+    // `range(a, b)` excluye el extremo: 1 + 2 + ... + 1999.
+    assert_eq!(run(src, ctx(&[])), num(dec!(1999000)));
+}
+
+// ---------------------------------------------------------------------------
+// Regresión: declaraciones antes de `main`
+//
+// La gramática era `main_block | stmt*`, excluyentes: declarar una función
+// auxiliar arriba y después abrir `main` fallaba con un error que apuntaba a
+// `main`, justo donde no estaba el problema.
+// ---------------------------------------------------------------------------
+
+#[test]
+fn funciones_declaradas_antes_de_main() {
+    let src = r#"
+        fn doble(x) { emit x * 2; }
+        fn cuadruple(x) { emit doble(doble(x)); }
+        main { emit cuadruple(5); }
+    "#;
+    assert_eq!(run(src, ctx(&[])), num(dec!(20)));
+}
+
+#[test]
+fn header_funciones_y_main_conviven() {
+    let src = r#"
+        header { name: "con_helpers"; const TASA = 2; }
+        fn escalar(x) { emit x * TASA; }
+        main { emit escalar(BASE); }
+    "#;
+    assert_eq!(run(src, ctx(&[("BASE", num(dec!(21)))])), num(dec!(42)));
+}
+
+#[test]
+fn sentencias_antes_de_main_se_ejecutan_antes() {
+    let src = r#"
+        var contador = 1;
+        contador = contador + 1;
+        main { emit contador; }
+    "#;
+    assert_eq!(run(src, ctx(&[])), num(dec!(2)));
+}
