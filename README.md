@@ -82,7 +82,7 @@ Si tu problema es “tomar datos, aplicar reglas y devolver resultados”… est
 Ahora, a modo de ejemplo:
 
 ```caper
-use std.math.{ round };
+use std.math.{ round_half_up };
 
 header {
     name: "liquidacion";
@@ -92,8 +92,9 @@ header {
 
 main {
     let bruto      = SUELDO_BASE ?? 0;
-    let desc_afp   = round(bruto * TASA_AFP, 0);
-    let desc_salud = round(bruto * FONASA_TASA, 0);
+    // `round_half_up` y no `round`: para dinero el 0,5 sube. Ver std.math.
+    let desc_afp   = round_half_up(bruto * TASA_AFP, 0);
+    let desc_salud = round_half_up(bruto * FONASA_TASA, 0);
 
     emit {
         sueldo_bruto:   bruto,
@@ -111,7 +112,7 @@ caper run liquidacion.caper --context '{"SUELDO_BASE": 850000, "FONASA_TASA": 0.
 
 ## ¿Por qué AlcaparraLang?
 
-- **Aritmética decimal exacta** — todos los números usan `rust_decimal::Decimal`. Sin errores de punto flotante en cálculos monetarios.
+- **Aritmética decimal exacta** — todos los números usan `rust_decimal::Decimal`. Sin errores de punto flotante en cálculos monetarios. Para redondear dinero, `round_half_up`: `round` redondea medio al par, que sesga distinto.
 - **Inyección de contexto** — los valores del entorno (`SUELDO_BASE`, tasas, etc.) se inyectan directamente en el scope del script. Los scripts no acceden a bases de datos ni HTTP — solo calculan.
 - **Embebible** — usa el crate `alcaparra` directamente en tu aplicación Rust. Sin subprocesos, sin FFI.
 - **Seguro por diseño** — sin acceso a sistema de archivos, red ni sistema operativo desde dentro de un script.
