@@ -38,6 +38,22 @@ pub fn call(name: &str, args: &[Value], line: usize) -> Result<Option<Value>, Ca
         "pad_left"     => pad_left(args, line)?,
         "pad_right"    => pad_right(args, line)?,
         "str"          => to_str(args, line)?,
+        // Nombres que anuncia el catalogo de `caper -m`.
+        "trim_start"   => ltrim(args, line)?,
+        "trim_end"     => rtrim(args, line)?,
+        "to_string"    => to_str(args, line)?,
+        "to_number"    => to_number(args, line)?,
+        "repeat"       => repeat(args, line)?,
+        "char_at"      => char_at(args, line)?,
+        "substring"    => substring(args, line)?,
+        "count_occurrences" => count_occurrences(args, line)?,
+        "index_of" => {
+            // Tambien lo reclama `std.arrays`: aca solo los strings.
+            match args.first() {
+                Some(Value::Str(_)) => index_of(args, line)?,
+                _ => return Ok(None),
+            }
+        }
         _ => return Ok(None),
     };
     Ok(Some(result))
@@ -223,4 +239,78 @@ fn to_str(args: &[Value], _line: usize) -> Result<Value, CaperError> {
             detail: "argument 1 is required".to_string(),
         }),
     }
+}
+
+/// Convierte el texto a numero. Es la misma conversion de `std.types.number`,
+/// con el nombre que anuncia el catalogo de `std.strings`.
+fn to_number(args: &[Value], _line: usize) -> Result<Value, CaperError> {
+    match args.first().and_then(|v| v.as_decimal()) {
+        Some(n) => Ok(Value::Number(n)),
+        None => Err(CaperError::ArgumentError {
+            func: "to_number".to_string(),
+            detail: "el argumento no se puede convertir a numero".to_string(),
+        }),
+    }
+}
+
+/// Repite el texto `n` veces. `n = 0` da el texto vacio.
+fn repeat(args: &[Value], _line: usize) -> Result<Value, CaperError> {
+    let s = require_str(args, 0, "repeat")?;
+    let n = require_usize(args, 1, "repeat")?;
+    Ok(Value::Str(s.repeat(n)))
+}
+
+/// El caracter en la posicion dada, contando caracteres y no bytes. Fuera de
+/// rango devuelve el texto vacio y no un error, igual que `first`/`last` en
+/// arreglos devuelven `null`.
+fn char_at(args: &[Value], _line: usize) -> Result<Value, CaperError> {
+    let s = require_str(args, 0, "char_at")?;
+    let i = require_usize(args, 1, "char_at")?;
+    Ok(Value::Str(s.chars().nth(i).map(|c| c.to_string()).unwrap_or_default()))
+}
+
+/// Porcion del texto entre dos posiciones: `inicio` incluido, `fin` excluido.
+///
+/// **No es un alias de `substr`**, que recibe un **largo** como tercer argumento.
+/// Los dos nombres existen con la semantica que cada uno tiene por convencion:
+/// `substr("abcde", 1, 3)` es `"bcd"` (tres caracteres) y
+/// `substring("abcde", 1, 3)` es `"bc"` (hasta la posicion 3).
+fn substring(args: &[Value], _line: usize) -> Result<Value, CaperError> {
+    let s      = require_str(args, 0, "substring")?;
+    let inicio = require_usize(args, 1, "substring")?;
+    let chars: Vec<char> = s.chars().collect();
+
+    let fin = if args.len() > 2 {
+        require_usize(args, 2, "substring")?.min(chars.len())
+    } else {
+        chars.len()
+    };
+
+    if inicio >= fin {
+        return Ok(Value::Str(String::new()));
+    }
+    Ok(Value::Str(chars[inicio..fin].iter().collect()))
+}
+
+/// Posicion de la primera aparicion, en caracteres, o `-1` si no esta.
+fn index_of(args: &[Value], _line: usize) -> Result<Value, CaperError> {
+    let s   = require_str(args, 0, "index_of")?;
+    let sub = require_str(args, 1, "index_of")?;
+
+    match s.find(sub) {
+        // `find` da un offset en bytes; se traduce a caracteres.
+        Some(byte) => Ok(Value::Number(Decimal::from(s[..byte].chars().count()))),
+        None => Ok(Value::Number(Decimal::from(-1))),
+    }
+}
+
+/// Cuantas veces aparece `sub` en el texto, sin superponerse. `sub` vacio da 0.
+fn count_occurrences(args: &[Value], _line: usize) -> Result<Value, CaperError> {
+    let s   = require_str(args, 0, "count_occurrences")?;
+    let sub = require_str(args, 1, "count_occurrences")?;
+
+    if sub.is_empty() {
+        return Ok(Value::Number(Decimal::ZERO));
+    }
+    Ok(Value::Number(Decimal::from(s.matches(sub).count())))
 }
