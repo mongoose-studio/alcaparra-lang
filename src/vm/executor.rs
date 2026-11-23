@@ -565,7 +565,7 @@ impl Executor {
                 // Guardar scope actual e instalar el scope capturado
                 let saved_scope = std::mem::replace(
                     &mut self.scope,
-                    ScopeStack::new(fd.captured.clone()),
+                    ScopeStack::from_shared(Rc::clone(&fd.captured)),
                 );
 
                 // Frame para parámetros / cuerpo
@@ -979,7 +979,7 @@ impl Executor {
                         body:     fd.body.clone(),
                         chunk_id: fd.chunk_id,
                         program:  Some(Rc::clone(&lib_prog)),
-                        captured: fd.captured.clone(),
+                        captured: Rc::clone(&fd.captured),
                     };
                     v = Value::Function(Rc::new(new_fd));
                 }
@@ -1068,7 +1068,7 @@ fn arith(l: Value, r: Value, line: usize, f: impl Fn(Decimal, Decimal) -> Decima
 }
 
 fn require_numbers(l: &Value, r: &Value, line: usize, op: &str) -> Result<(Decimal, Decimal), CaperError> {
-    match (l.as_decimal(), r.as_decimal()) {
+    match (l.as_number(), r.as_number()) {
         (Some(a), Some(b)) => Ok((a, b)),
         _ => Err(CaperError::TypeError {
             line,

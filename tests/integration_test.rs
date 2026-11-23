@@ -2552,3 +2552,113 @@ fn round_admite_decimales_negativos() {
         Value::Array(vec![num(dec!(1200)), num(dec!(1240)), num(dec!(1200))]),
     );
 }
+
+// ---------------------------------------------------------------------------
+// Regresion de rendimiento: el contexto no se copia en cada llamada
+// ---------------------------------------------------------------------------
+
+/// Cada llamada a funcion instalaba el entorno capturado con un `clone()` del
+/// mapa completo. Para una funcion de nivel superior ese mapa **es el contexto**,
+/// asi que el costo de llamar a una funcion era proporcional al tamano del
+/// contexto aunque el script no lo tocara. Una nomina de 100 trabajadores
+/// tardaba 14 segundos y una de 500 no terminaba.
+///
+/// Nada fallaba: solo se arrastraba. Por eso la regresion se mide como una
+/// *razon* entre dos contextos y no como un tiempo absoluto, que dependeria de
+/// la maquina. Antes del arreglo la razon era de 164x.
+#[test]
+fn el_contexto_grande_no_encarece_las_llamadas() {
+    use std::time::Instant;
+
+    const LLAMADAS: usize = 3000;
+    let fuente = r#"
+        use std.arrays.{ range };
+        header { name: "r"; version: "1.0.0"; }
+        fn f(x) { emit x + 1; }
+        main { var s = 0; foreach i in range(0, N) { s = s + f(i); } emit s; }
+    "#;
+
+    let relleno: Value = Value::Array(
+        (0..2000)
+            .map(|i| {
+                obj(&[
+                    ("a", num(rust_decimal::Decimal::from(i))),
+                    ("b", s(&"x".repeat(50))),
+                    ("c", Value::Array(vec![num(dec!(1)), num(dec!(2)), num(dec!(3))])),
+                ])
+            })
+            .collect(),
+    );
+
+    let medir = |con_relleno: bool| -> u128 {
+        let mut contexto = HashMap::new();
+        contexto.insert("N".to_string(), num(rust_decimal::Decimal::from(LLAMADAS)));
+        if con_relleno {
+            // Datos que el script no mira jamas.
+            contexto.insert("BASURA".to_string(), relleno.clone());
+        }
+        let t0 = Instant::now();
+        let r = run_ok(fuente, contexto);
+        assert!(r.is_ok(), "el script debe correr: {:?}", r.err());
+        t0.elapsed().as_micros().max(1)
+    };
+
+    // Se calienta una vez para no medir el primer acceso a memoria.
+    let _ = medir(false);
+    let chico  = medir(false);
+    let grande = medir(true);
+
+    let razon = grande as f64 / chico as f64;
+    assert!(
+        razon < 8.0,
+        "llamar a una funcion se encarecio {razon:.1}x por un contexto que el \
+         script ni siquiera toca ({chico} us sin relleno, {grande} us con \
+         relleno). El entorno capturado se esta copiando en cada llamada en vez \
+         de compartirse: ver ScopeStack::base."
+    );
+}
+
+/// La aritmetica no convierte strings. Un contexto JSON trae numeros como
+/// string con facilidad —PostgreSQL serializa `numeric` asi— y la conversion
+/// silenciosa hacia que `"1850000" * 26 / 30` diera un resultado correcto y la
+/// primera suma lo concatenara: el calculo salia mal sin un solo error.
+#[test]
+fn la_aritmetica_no_convierte_strings() {
+    let c = ctx(&[("S", s("1850000")), ("N", num(dec!(100)))]);
+
+    for expr in ["S * 2", "S - N", "S / 2", "S % 7", "S ** 2", "N * S"] {
+        let fuente = format!(
+            "header {{ name: \"t\"; version: \"1.0.0\"; }} main {{ emit {expr}; }}"
+        );
+        let r = run_ok(&fuente, c.clone());
+        assert!(
+            matches!(r, Err(alcaparra::CaperError::TypeError { .. })),
+            "`{expr}` debe dar TypeError y no convertir el string en silencio, dio {r:?}"
+        );
+    }
+
+    // Los booleanos tampoco valen 1 y 0.
+    let r = run_ok(
+        "header { name: \"t\"; version: \"1.0.0\"; } main { emit B * 2; }",
+        ctx(&[("B", b(true))]),
+    );
+    assert!(matches!(r, Err(alcaparra::CaperError::TypeError { .. })), "true * 2 debe fallar, dio {r:?}");
+
+    // Y las agregaciones de arreglos, que suman plata, tampoco.
+    for expr in ["sum(A)", "avg(A)", "min(A)", "max(A)"] {
+        let fuente = format!(
+            "use std.arrays.{{ sum, avg, min, max }};\n\
+             header {{ name: \"t\"; version: \"1.0.0\"; }} main {{ emit {expr}; }}"
+        );
+        let r = run_ok(&fuente, ctx(&[("A", Value::Array(vec![s("1"), s("2")]))]));
+        assert!(r.is_err(), "`{expr}` sobre strings debe fallar, dio {r:?}");
+    }
+
+    // `to_number` sigue siendo la via explicita, y esa si convierte.
+    let v = run(
+        "use std.types.{ to_number };\n\
+         header { name: \"t\"; version: \"1.0.0\"; } main { emit to_number(S) * 2; }",
+        c.clone(),
+    );
+    assert_eq!(v, num(dec!(3700000)));
+}

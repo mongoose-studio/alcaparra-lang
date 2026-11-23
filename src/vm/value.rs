@@ -28,7 +28,8 @@ pub struct FunctionDef {
     /// Programa compilado al que pertenece este chunk (necesario para llamadas cross-biblioteca).
     pub program: Option<Rc<CompiledProgram>>,
     /// Snapshot del scope envolvente en el momento de declaración del closure/fn.
-    pub captured: HashMap<String, Value>,
+    /// Entorno capturado, compartido: ver `ScopeStack::base`.
+    pub captured: Rc<HashMap<String, Value>>,
 }
 
 /// Las funciones nunca son iguales entre sí.
@@ -127,11 +128,29 @@ impl Value {
     }
 
     /// Intenta convertir a Decimal para aritmética.
+    /// Conversion **laxa**: parsea strings y trata los booleanos como 1 y 0.
+    /// Es la que necesitan `to_number` y las funciones que convierten a
+    /// proposito. **No** la use la aritmetica: ver `as_number`.
     pub fn as_decimal(&self) -> Option<Decimal> {
         match self {
             Value::Number(n) => Some(*n),
             Value::Str(s)    => s.parse().ok(),
             Value::Bool(b)   => Some(if *b { Decimal::ONE } else { Decimal::ZERO }),
+            _                => None,
+        }
+    }
+
+    /// Conversion **estricta**: solo un numero es un numero.
+    ///
+    /// La aritmetica usa esta y no `as_decimal` porque un contexto JSON trae
+    /// numeros como string con muchisima facilidad —PostgreSQL serializa
+    /// `numeric` como string, y PHP arrastra eso hasta el JSON—. Con la
+    /// conversion laxa, `"1850000" * 26 / 30` daba un resultado correcto y la
+    /// primera suma lo concatenaba: la liquidacion salia mal sin un solo error.
+    /// Mejor que reviente en la primera operacion.
+    pub fn as_number(&self) -> Option<Decimal> {
+        match self {
+            Value::Number(n) => Some(*n),
             _                => None,
         }
     }

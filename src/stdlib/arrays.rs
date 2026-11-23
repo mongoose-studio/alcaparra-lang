@@ -252,7 +252,7 @@ fn sum(args: &[Value], line: usize) -> Result<Value, CaperError> {
     let arr = require_arr(args, 0, "sum")?;
     let mut total = Decimal::ZERO;
     for v in &arr {
-        total += v.as_decimal().ok_or_else(|| CaperError::TypeError {
+        total += v.as_number().ok_or_else(|| CaperError::TypeError {
             line,
             detail: format!("sum: expected number, got {}", v.type_name()),
         })?;
@@ -267,7 +267,7 @@ fn avg(args: &[Value], line: usize) -> Result<Value, CaperError> {
     }
     let mut total = Decimal::ZERO;
     for v in &arr {
-        total += v.as_decimal().ok_or_else(|| CaperError::TypeError {
+        total += v.as_number().ok_or_else(|| CaperError::TypeError {
             line,
             detail: format!("avg: expected number, got {}", v.type_name()),
         })?;
@@ -278,11 +278,11 @@ fn avg(args: &[Value], line: usize) -> Result<Value, CaperError> {
 fn min_of(args: &[Value], line: usize) -> Result<Value, CaperError> {
     let arr = require_arr(args, 0, "min_of")?;
     if arr.is_empty() { return Ok(Value::Null); }
-    let mut min = arr[0].as_decimal().ok_or_else(|| CaperError::TypeError {
+    let mut min = arr[0].as_number().ok_or_else(|| CaperError::TypeError {
         line, detail: format!("min_of: expected number, got {}", arr[0].type_name()),
     })?;
     for v in &arr[1..] {
-        let n = v.as_decimal().ok_or_else(|| CaperError::TypeError {
+        let n = v.as_number().ok_or_else(|| CaperError::TypeError {
             line, detail: format!("min_of: expected number, got {}", v.type_name()),
         })?;
         if n < min { min = n; }
@@ -293,11 +293,11 @@ fn min_of(args: &[Value], line: usize) -> Result<Value, CaperError> {
 fn max_of(args: &[Value], line: usize) -> Result<Value, CaperError> {
     let arr = require_arr(args, 0, "max_of")?;
     if arr.is_empty() { return Ok(Value::Null); }
-    let mut max = arr[0].as_decimal().ok_or_else(|| CaperError::TypeError {
+    let mut max = arr[0].as_number().ok_or_else(|| CaperError::TypeError {
         line, detail: format!("max_of: expected number, got {}", arr[0].type_name()),
     })?;
     for v in &arr[1..] {
-        let n = v.as_decimal().ok_or_else(|| CaperError::TypeError {
+        let n = v.as_number().ok_or_else(|| CaperError::TypeError {
             line, detail: format!("max_of: expected number, got {}", v.type_name()),
         })?;
         if n > max { max = n; }

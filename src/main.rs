@@ -48,7 +48,8 @@ fn print_usage() {
     println!("USO:");
     println!("  caper <comando> [opciones]\n");
     println!("COMANDOS DE EJECUCIÓN:");
-    println!("  run [script.caper]   Ejecutar un script o el proyecto actual");
+    println!("  run [script.caper]   Ejecutar un script o el proyecto actual
+                       --context '<json>' | --context-file <ruta.json>");
     println!("  validate <script>    Verificar sintaxis sin ejecutar");
     println!("  lint <script> [...]  Análisis estático (apto para CI)");
     println!("  fmt <script>         Formatear código fuente\n");
@@ -66,6 +67,7 @@ fn print_usage() {
     println!("  --help / -h          Mostrar esta ayuda\n");
     println!("EJEMPLOS:");
     println!("  caper run liquidacion.caper --context '{{\"SUELDO\": 850000}}'");
+    println!("  caper run liquidacion.caper --context-file contexto.json");
     println!("  caper run                   # modo proyecto, lee .capercfg");
     println!("  caper new mi-proyecto");
     println!("  caper new --pkg @mi-usuario/formulas-cl");
@@ -90,6 +92,7 @@ fn cmd_help(args: &[String]) {
             println!("  y usa 'entry' como script y 'context' como variables base.\n");
             println!("EJEMPLOS:");
             println!("  caper run script.caper --context '{{\"SUELDO\": 850000}}'");
+            println!("  caper run script.caper --context-file contexto.json");
             println!("  caper run script.caper --context-file ctx.json");
             println!("  caper run   # ejecuta entry definido en .capercfg");
         }

@@ -4,6 +4,7 @@
 
 use crate::vm::value::Value;
 use std::collections::HashMap;
+use std::rc::Rc;
 
 /// Mutabilidad de un binding.
 #[derive(Debug, Clone, PartialEq)]
@@ -28,18 +29,27 @@ struct Slot {
 /// La búsqueda recorre desde el tope del stack hacia el nivel 0.
 /// La asignación encuentra el nivel que posee el nombre y muta en su lugar.
 pub struct ScopeStack {
+    /// Frame 0 — el entorno capturado (contexto inyectado y constantes del
+    /// header). Se **comparte** por `Rc` en vez de copiarse: se instala en cada
+    /// llamada a funcion, y para una funcion de nivel superior contiene el
+    /// contexto completo. Copiarlo hacia que el costo de una llamada fuera
+    /// proporcional al tamano del contexto aunque el script no lo tocara: una
+    /// nomina de 100 trabajadores tardaba 14 segundos y una de 500 no terminaba.
+    /// Sus bindings son `Mutable`; asignar a uno paga una copia por `make_mut`.
+    base:   Rc<HashMap<String, Value>>,
     frames: Vec<HashMap<String, Slot>>,
 }
 
 impl ScopeStack {
     /// Crea un nuevo stack de scope con un frame inicial para el contexto inyectado.
     pub fn new(context: HashMap<String, Value>) -> Self {
-        let context_frame: HashMap<String, Slot> = context
-            .into_iter()
-            .map(|(k, v)| (k, Slot { value: v, binding: Binding::Mutable }))
-            .collect();
+        Self::from_shared(Rc::new(context))
+    }
 
-        Self { frames: vec![context_frame] }
+    /// Igual que `new`, pero sin copiar: comparte el entorno que recibe.
+    /// Es la que usa cada llamada a funcion.
+    pub fn from_shared(context: Rc<HashMap<String, Value>>) -> Self {
+        Self { base: context, frames: Vec::new() }
     }
 
     /// Empuja un nuevo frame de scope vacío.
@@ -49,9 +59,7 @@ impl ScopeStack {
 
     /// Extrae el frame de scope del tope.
     pub fn pop(&mut self) {
-        if self.frames.len() > 1 {
-            self.frames.pop();
-        }
+        self.frames.pop();
     }
 
     /// Define una nueva variable en el frame actual (tope).
@@ -65,7 +73,8 @@ impl ScopeStack {
         binding: Binding,
         line: usize,
     ) -> Result<(), crate::error::CaperError> {
-        let frame = self.frames.last_mut().expect("scope stack is empty");
+        if self.frames.is_empty() { self.frames.push(HashMap::new()); }
+        let frame = self.frames.last_mut().expect("recien empujado");
         if frame.contains_key(&name) {
             return Err(crate::error::CaperError::VariableRedeclaration { name, line });
         }
@@ -87,7 +96,7 @@ impl ScopeStack {
                 return Some(&slot.value);
             }
         }
-        None
+        self.base.get(name)
     }
 
     /// Asigna a una variable existente.
@@ -116,6 +125,14 @@ impl ScopeStack {
             }
         }
 
+        // El frame base (contexto + constantes) se trata como `Mutable`, igual
+        // que antes. La copia se paga aqui y solo aqui: un script que nunca
+        // asigna a una variable del contexto no copia nunca.
+        if self.base.contains_key(name) {
+            Rc::make_mut(&mut self.base).insert(name.to_string(), value);
+            return Ok(());
+        }
+
         Err(crate::error::CaperError::UndefinedVariable {
             name: name.to_string(),
             line,
@@ -124,7 +141,7 @@ impl ScopeStack {
 
     /// Profundidad de anidamiento actual (número de frames).
     pub fn depth(&self) -> usize {
-        self.frames.len()
+        self.frames.len() + 1
     }
 
     /// Retorna true si la variable nombrada existe y es `Mutable` (var).
@@ -135,18 +152,23 @@ impl ScopeStack {
                 return slot.binding == Binding::Mutable;
             }
         }
-        false
+        self.base.contains_key(name)
     }
 
     /// Retorna un snapshot plano de todos los bindings visibles actualmente (el más interno gana).
     /// Usado para capturar el entorno envolvente al crear funciones/closures.
-    pub fn snapshot(&self) -> HashMap<String, Value> {
-        let mut map = HashMap::new();
+    pub fn snapshot(&self) -> Rc<HashMap<String, Value>> {
+        // Sin frames propios el entorno visible ES el base: se comparte tal cual
+        // y la captura sale gratis.
+        if self.frames.iter().all(|f| f.is_empty()) {
+            return Rc::clone(&self.base);
+        }
+        let mut map = (*self.base).clone();
         for frame in self.frames.iter() {
             for (k, slot) in frame {
                 map.insert(k.clone(), slot.value.clone());
             }
         }
-        map
+        Rc::new(map)
     }
 }

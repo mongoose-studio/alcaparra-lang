@@ -79,8 +79,9 @@ pub fn execute_library(
 
     // Exportar sólo valores de tipo Function
     Ok(vm.scope.snapshot()
-        .into_iter()
+        .iter()
         .filter(|(_, v)| v.is_function())
+        .map(|(k, v)| (k.clone(), v.clone()))
         .collect())
 }
 
@@ -535,10 +536,10 @@ impl Vm {
                     (Value::Str(a), _) => Ok(Value::Str(format!("{a}{r}"))),
                     (_, Value::Str(b)) => Ok(Value::Str(format!("{l}{b}"))),
                     _ => {
-                        let a = l.as_decimal().ok_or_else(|| CaperError::TypeError {
+                        let a = l.as_number().ok_or_else(|| CaperError::TypeError {
                             line, detail: format!("Cannot add {} and {}", l.type_name(), r.type_name()),
                         })?;
-                        let b = r.as_decimal().ok_or_else(|| CaperError::TypeError {
+                        let b = r.as_number().ok_or_else(|| CaperError::TypeError {
                             line, detail: format!("Cannot add {} and {}", l.type_name(), r.type_name()),
                         })?;
                         Ok(Value::Number(a + b))
@@ -667,7 +668,7 @@ impl Vm {
         // Intercambiar temporalmente el scope capturado, llamar, luego restaurar
         let saved_scope = std::mem::replace(
             &mut self.scope,
-            ScopeStack::new(fd.captured.clone()),
+            ScopeStack::from_shared(Rc::clone(&fd.captured)),
         );
 
         // Empujar un frame para parámetros y variables locales
@@ -1138,7 +1139,7 @@ fn error_to_value(e: &CaperError) -> Value {
 }
 
 fn numeric(v: &Value, op: &BinOp, line: usize) -> Result<Decimal, CaperError> {
-    v.as_decimal().ok_or_else(|| CaperError::TypeError {
+    v.as_number().ok_or_else(|| CaperError::TypeError {
         line,
         detail: format!("Operator {:?} requires a number, got {}", op, v.type_name()),
     })

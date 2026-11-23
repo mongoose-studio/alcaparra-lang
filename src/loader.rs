@@ -202,7 +202,7 @@ fn extract_library_fns(compiled: &CompiledProgram) -> HashMap<String, Value> {
                     body:     vec![],
                     chunk_id: Some(chunk_id),
                     program:  None, // adjuntado más tarde por el ejecutor
-                    captured: HashMap::new(),
+                    captured: std::rc::Rc::new(HashMap::new()),
                 };
                 fns.insert(bind_name.clone(), Value::Function(Rc::new(fd)));
                 i += 2;
