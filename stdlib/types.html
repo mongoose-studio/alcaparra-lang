@@ -15,8 +15,8 @@
         <link rel="icon" href="../favicon-de23e50b.svg">
         <link rel="shortcut icon" href="../favicon-8114d1fc.png">
         <link rel="stylesheet" href="../css/variables-8adf115d.css">
-        <link rel="stylesheet" href="../css/general-2459343d.css">
-        <link rel="stylesheet" href="../css/chrome-ae938929.css">
+        <link rel="stylesheet" href="../css/general-e96d0476.css">
+        <link rel="stylesheet" href="../css/chrome-d279d366.css">
         <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-f2e1ec26.js";
+            window.path_to_searchindex_js = "../searchindex-06ad227d.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-8427f7c4.js"></script>
+        <script src="../toc-472f8e94.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -198,9 +198,11 @@
 <tr><td><code>is_bool(v)</code></td><td><code>true</code> si es booleano</td></tr>
 <tr><td><code>is_array(v)</code></td><td><code>true</code> si es array</td></tr>
 <tr><td><code>is_object(v)</code></td><td><code>true</code> si es objeto</td></tr>
-<tr><td><code>number(v)</code></td><td>Coerce a número (error si no parseable)</td></tr>
+<tr><td><code>is_function(v)</code></td><td><code>true</code> si es una función o un closure</td></tr>
+<tr><td><code>number(v)</code> · <code>to_number(v)</code></td><td>Coerce a número (error si no parseable)</td></tr>
 <tr><td><code>int(v)</code></td><td>Coerce a entero (trunca decimales)</td></tr>
-<tr><td><code>bool(v)</code></td><td>Coerce a booleano</td></tr>
+<tr><td><code>bool(v)</code> · <code>to_bool(v)</code></td><td>Coerce a booleano</td></tr>
+<tr><td><code>to_string(v)</code></td><td>Coerce a string — lo resuelve <code>std.strings.str</code></td></tr>
 </tbody>
 </table>
 </div>
@@ -223,6 +225,15 @@ if not is_number(TASA) {
     throw { code: "TIPO_INVALIDO", message: "TASA debe ser un número" };
 }
 </code></pre>
+<h2 id="el-contexto-no-se-convierte-solo"><a class="header" href="#el-contexto-no-se-convierte-solo">El contexto no se convierte solo</a></h2>
+<p>Los valores que entran por el contexto llegan con el tipo que traen. Un número mandado como texto
+<strong>queda como texto</strong>, y compararlo con un número es un error de tipo, no una coerción silenciosa:</p>
+<pre><code class="language-caper">// contexto: { "SUELDO": "850000" }
+SUELDO &gt; 500000        // TYPE_ERROR: cannot compare number and string
+number(SUELDO) &gt; 500000   // true
+</code></pre>
+<p>Es a propósito: en un motor de cálculo, adivinar tipos es peor que fallar temprano. Si quien arma
+el contexto manda números como texto, conviene convertirlos ahí y no en cada script.</p>
 
                     </main>
 
@@ -268,11 +279,11 @@ if not is_number(TASA) {
 
         <script src="../elasticlunr-ef4e11c1.min.js"></script>
         <script src="../mark-09e88c2c.min.js"></script>
-        <script src="../searcher-c2a407aa.js"></script>
+        <script src="../searcher-09f2665d.js"></script>
 
         <script src="../clipboard-1626706a.min.js"></script>
         <script src="../highlight-abc7f01d.js"></script>
-        <script src="../book-a0b12cfe.js"></script>
+        <script src="../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
 

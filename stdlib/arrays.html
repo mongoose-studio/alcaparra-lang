@@ -15,8 +15,8 @@
         <link rel="icon" href="../favicon-de23e50b.svg">
         <link rel="shortcut icon" href="../favicon-8114d1fc.png">
         <link rel="stylesheet" href="../css/variables-8adf115d.css">
-        <link rel="stylesheet" href="../css/general-2459343d.css">
-        <link rel="stylesheet" href="../css/chrome-ae938929.css">
+        <link rel="stylesheet" href="../css/general-e96d0476.css">
+        <link rel="stylesheet" href="../css/chrome-d279d366.css">
         <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-f2e1ec26.js";
+            window.path_to_searchindex_js = "../searchindex-06ad227d.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-8427f7c4.js"></script>
+        <script src="../toc-472f8e94.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -194,6 +194,7 @@
 <tr><td><code>count(arr)</code></td><td>Número de elementos (alias: <code>len</code>)</td></tr>
 <tr><td><code>push(arr, item)</code></td><td>Retorna nuevo array con <code>item</code> al final</td></tr>
 <tr><td><code>pop(arr)</code></td><td>Retorna <code>[ultimo, resto]</code> — no muta</td></tr>
+<tr><td><code>shift(arr)</code></td><td>Retorna el arreglo sin su primer elemento — no muta</td></tr>
 <tr><td><code>unshift(arr, item)</code></td><td>Retorna nuevo array con <code>item</code> al inicio</td></tr>
 <tr><td><code>first(arr)</code></td><td>Primer elemento</td></tr>
 <tr><td><code>last(arr)</code></td><td>Último elemento</td></tr>
@@ -201,20 +202,24 @@
 <tr><td><code>reverse(arr)</code></td><td>Retorna array invertido</td></tr>
 <tr><td><code>sort(arr)</code></td><td>Retorna array ordenado ascendente</td></tr>
 <tr><td><code>unique(arr)</code></td><td>Elimina duplicados</td></tr>
-<tr><td><code>flatten(arr)</code></td><td>Aplana un nivel de anidamiento</td></tr>
+<tr><td><code>concat(a, b, ...)</code></td><td>Une dos o más arreglos en uno</td></tr>
+<tr><td><code>flatten(arr)</code> · <code>flat(arr)</code></td><td>Aplana un nivel de anidamiento</td></tr>
 <tr><td><code>flatten_deep(arr)</code></td><td>Aplana completamente</td></tr>
-<tr><td><code>contains(arr, val)</code></td><td><code>true</code> si el valor está en el array</td></tr>
+<tr><td><code>contains(arr, val)</code> · <code>includes(arr, val)</code></td><td><code>true</code> si el valor está en el array</td></tr>
 <tr><td><code>index_of(arr, val)</code></td><td>Índice del valor (o <code>-1</code>)</td></tr>
 <tr><td><code>sum(arr)</code></td><td>Suma de todos los elementos numéricos</td></tr>
 <tr><td><code>avg(arr)</code></td><td>Promedio de los elementos numéricos</td></tr>
-<tr><td><code>min_of(arr)</code></td><td>El mínimo del array</td></tr>
-<tr><td><code>max_of(arr)</code></td><td>El máximo del array</td></tr>
+<tr><td><code>min_of(arr)</code> · <code>min(arr)</code></td><td>El mínimo del array</td></tr>
+<tr><td><code>max_of(arr)</code> · <code>max(arr)</code></td><td>El máximo del array</td></tr>
 <tr><td><code>zip(arr1, arr2)</code></td><td><code>[[arr1[0],arr2[0]], ...]</code></td></tr>
 <tr><td><code>range(start, end)</code></td><td>Array <code>[start, ..., end-1]</code></td></tr>
-<tr><td><code>range(start, end, step)</code></td><td>Con paso personalizado</td></tr>
 </tbody>
 </table>
 </div>
+<p>Los de orden superior —<code>map</code>, <code>filter</code>, <code>reduce</code>, <code>find</code>, <code>any</code>, <code>all</code>, <code>sort_by</code>— se usan sobre
+arreglos y los documenta este mismo módulo más abajo. <code>find_all</code> y <code>find_index</code> viven en
+<a href="search.html">std.search</a>; <code>group_by</code> y <code>partition</code>, en <a href="sort.html">std.sort</a>.
+| <code>range(start, end, step)</code> | Con paso personalizado |</p>
 <h2 id="hof-funciones-de-orden-superior"><a class="header" href="#hof-funciones-de-orden-superior">HOF (funciones de orden superior)</a></h2>
 <div class="table-wrapper">
 <table>
@@ -295,11 +300,11 @@ let total_desc = sum(descuentos);
 
         <script src="../elasticlunr-ef4e11c1.min.js"></script>
         <script src="../mark-09e88c2c.min.js"></script>
-        <script src="../searcher-c2a407aa.js"></script>
+        <script src="../searcher-09f2665d.js"></script>
 
         <script src="../clipboard-1626706a.min.js"></script>
         <script src="../highlight-abc7f01d.js"></script>
-        <script src="../book-a0b12cfe.js"></script>
+        <script src="../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
 

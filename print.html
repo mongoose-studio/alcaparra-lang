@@ -16,8 +16,8 @@
         <link rel="icon" href="favicon-de23e50b.svg">
         <link rel="shortcut icon" href="favicon-8114d1fc.png">
         <link rel="stylesheet" href="css/variables-8adf115d.css">
-        <link rel="stylesheet" href="css/general-2459343d.css">
-        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/general-e96d0476.css">
+        <link rel="stylesheet" href="css/chrome-d279d366.css">
         <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-f2e1ec26.js";
+            window.path_to_searchindex_js = "searchindex-06ad227d.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-8427f7c4.js"></script>
+        <script src="toc-472f8e94.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -872,13 +872,20 @@ use std.math;
 <tr><td><code>abs(n)</code></td><td>Valor absoluto</td></tr>
 <tr><td><code>ceil(n)</code></td><td>Entero superior más cercano</td></tr>
 <tr><td><code>floor(n)</code></td><td>Entero inferior más cercano</td></tr>
-<tr><td><code>round(n, d)</code></td><td>Redondea a <code>d</code> decimales</td></tr>
+<tr><td><code>round(n, d)</code></td><td>Redondea a <code>d</code> decimales, <strong>medio al par</strong></td></tr>
+<tr><td><code>round_half_up(n, d)</code></td><td>Redondea a <code>d</code> decimales, <strong>medio hacia arriba</strong></td></tr>
 <tr><td><code>trunc(n, d)</code></td><td>Trunca a <code>d</code> decimales sin redondear</td></tr>
-<tr><td><code>max(a, b)</code></td><td>El mayor de dos valores</td></tr>
-<tr><td><code>min(a, b)</code></td><td>El menor de dos valores</td></tr>
+<tr><td><code>max(a, b)</code> · <code>max(arr)</code></td><td>El mayor de dos valores, o de un arreglo</td></tr>
+<tr><td><code>min(a, b)</code> · <code>min(arr)</code></td><td>El menor de dos valores, o de un arreglo</td></tr>
 <tr><td><code>pow(base, exp)</code></td><td>Potencia</td></tr>
 <tr><td><code>sqrt(n)</code></td><td>Raíz cuadrada</td></tr>
 <tr><td><code>sign(n)</code></td><td><code>-1</code>, <code>0</code> o <code>1</code> según el signo</td></tr>
+<tr><td><code>clamp(n, min, max)</code></td><td>Acota <code>n</code> al rango <code>[min, max]</code></td></tr>
+<tr><td><code>log(n)</code> · <code>log(n, base)</code></td><td>Logaritmo natural, o en la base dada</td></tr>
+<tr><td><code>log10(n)</code></td><td>Logaritmo en base 10</td></tr>
+<tr><td><code>exp(n)</code></td><td><code>e</code> elevado a <code>n</code></td></tr>
+<tr><td><code>pi()</code></td><td>La constante π</td></tr>
+<tr><td><code>e()</code></td><td>La constante e</td></tr>
 </tbody>
 </table>
 </div>
@@ -892,14 +899,43 @@ let diferencia = abs(-5000);                  // 5000
 let pagos       = ceil(1500 / 400);           // 4 (cuotas)
 let parte_entera = floor(3.99);              // 3
 </code></pre>
-<h3 id="round--el-más-usado-en-nómina"><a class="header" href="#round--el-más-usado-en-nómina">round — el más usado en nómina</a></h3>
+<h3 id="redondeo--lo-más-importante-del-módulo"><a class="header" href="#redondeo--lo-más-importante-del-módulo">Redondeo — lo más importante del módulo</a></h3>
 <pre><code class="language-caper">round(1234.567, 2)    // 1234.57
 round(1234.567, 0)    // 1235
-round(1234.567, -2)   // 1200  (redondea a centenas)
+round(1234.567, -2)   // 1200   — los decimales negativos redondean a decenas, centenas y así
+</code></pre>
+<p><strong>Hay dos estrategias y la diferencia importa.</strong> <code>round</code> redondea <strong>medio al par</strong>: el 0,5 va al
+entero par más cercano.</p>
+<pre><code class="language-caper">round(0.5, 0)   // 0     ← no 1
+round(1.5, 0)   // 2
+round(2.5, 0)   // 2     ← no 3
+round(3.5, 0)   // 4
+</code></pre>
+<p>Es la estrategia correcta para estadística y para promediar: no sesga hacia arriba. Pero <strong>no es la
+que usa la contabilidad en Chile</strong>, que redondea medio hacia arriba. Para eso está
+<code>round_half_up</code>:</p>
+<pre><code class="language-caper">round_half_up(0.5, 0)   // 1
+round_half_up(2.5, 0)   // 3
+round_half_up(-2.5, 0)  // -3    — se aleja del cero
 </code></pre>
 <blockquote>
-<p><code>round</code> usa redondeo bancario (half-to-even) por defecto, que es el estándar para cálculos financieros.</p>
+<p><strong>Para plata, <code>round_half_up</code>.</strong> Con un imponible de $1.005.000 la AFP sale 115.474,5: <code>round</code>
+da 115.474 y <code>round_half_up</code> da 115.475. Un peso de diferencia en una liquidación es un reclamo.</p>
 </blockquote>
+<h3 id="logaritmos--la-excepción-a-la-exactitud"><a class="header" href="#logaritmos--la-excepción-a-la-exactitud">Logaritmos — la excepción a la exactitud</a></h3>
+<p>Todo el resto del módulo trabaja en decimal exacto. <code>log</code>, <code>log10</code> y <code>exp</code> <strong>no</strong>: no existe un
+logaritmo exacto en decimal, así que devuelven una aproximación. Siguen siendo deterministas
+—misma entrada, misma salida, siempre— pero no se usan para plata.</p>
+<pre><code class="language-caper">log(8, 2)      // 3 (aprox)
+log10(100)     // 2 (aprox)
+exp(1)         // 2.7182818... (aprox)
+</code></pre>
+<h3 id="clamp"><a class="header" href="#clamp">clamp</a></h3>
+<pre><code class="language-caper">clamp(5, 1, 10)    // 5
+clamp(50, 1, 10)   // 10
+clamp(0, 1, 10)    // 1
+</code></pre>
+<p>Un rango invertido (<code>min &gt; max</code>) es un error, no un resultado silencioso.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="stdstrings"><a class="header" href="#stdstrings">std.strings</a></h1>
 <pre><code class="language-caper">use std.strings.{ upper, lower, trim, split, join, len };
@@ -915,8 +951,8 @@ round(1234.567, -2)   // 1200  (redondea a centenas)
 <tr><td><code>upper(s)</code></td><td>Mayúsculas</td></tr>
 <tr><td><code>lower(s)</code></td><td>Minúsculas</td></tr>
 <tr><td><code>trim(s)</code></td><td>Elimina espacios al inicio y fin</td></tr>
-<tr><td><code>ltrim(s)</code></td><td>Elimina espacios al inicio</td></tr>
-<tr><td><code>rtrim(s)</code></td><td>Elimina espacios al fin</td></tr>
+<tr><td><code>ltrim(s)</code> · <code>trim_start(s)</code></td><td>Elimina espacios al inicio</td></tr>
+<tr><td><code>rtrim(s)</code> · <code>trim_end(s)</code></td><td>Elimina espacios al fin</td></tr>
 <tr><td><code>contains(s, sub)</code></td><td><code>true</code> si <code>sub</code> está en <code>s</code></td></tr>
 <tr><td><code>starts_with(s, prefix)</code></td><td><code>true</code> si <code>s</code> comienza con <code>prefix</code></td></tr>
 <tr><td><code>ends_with(s, suffix)</code></td><td><code>true</code> si <code>s</code> termina con <code>suffix</code></td></tr>
@@ -924,10 +960,16 @@ round(1234.567, -2)   // 1200  (redondea a centenas)
 <tr><td><code>replace_all(s, from, to)</code></td><td>Reemplaza todas las ocurrencias</td></tr>
 <tr><td><code>split(s, sep)</code></td><td>Divide string en array</td></tr>
 <tr><td><code>join(arr, sep)</code></td><td>Une array en string</td></tr>
-<tr><td><code>substr(s, start, length)</code></td><td>Subcadena</td></tr>
+<tr><td><code>substr(s, start, length)</code></td><td>Subcadena por <strong>largo</strong></td></tr>
+<tr><td><code>substring(s, start, end)</code></td><td>Subcadena hasta la posición <code>end</code>, excluida</td></tr>
+<tr><td><code>char_at(s, i)</code></td><td>El carácter en la posición <code>i</code> (vacío fuera de rango)</td></tr>
+<tr><td><code>index_of(s, sub)</code></td><td>Posición de la primera aparición, o <code>-1</code></td></tr>
+<tr><td><code>count_occurrences(s, sub)</code></td><td>Cuántas veces aparece <code>sub</code>, sin superponerse</td></tr>
+<tr><td><code>repeat(s, n)</code></td><td>Repite el texto <code>n</code> veces</td></tr>
 <tr><td><code>pad_left(s, n, char)</code></td><td>Rellena por la izquierda hasta longitud <code>n</code></td></tr>
 <tr><td><code>pad_right(s, n, char)</code></td><td>Rellena por la derecha</td></tr>
-<tr><td><code>str(v)</code></td><td>Convierte cualquier valor a string</td></tr>
+<tr><td><code>str(v)</code> · <code>to_string(v)</code></td><td>Convierte cualquier valor a string</td></tr>
+<tr><td><code>to_number(s)</code></td><td>Convierte el texto a número (error si no se puede)</td></tr>
 </tbody>
 </table>
 </div>
@@ -953,6 +995,17 @@ let sueldo  = campos[1];   // "850000" (string)
 let partes  = ["CL", "2026", "03"];
 let periodo = join(partes, "-");                   // "CL-2026-03"
 </code></pre>
+<h2 id="substr-y-substring-no-son-lo-mismo"><a class="header" href="#substr-y-substring-no-son-lo-mismo"><code>substr</code> y <code>substring</code> no son lo mismo</a></h2>
+<p>Los dos nombres existen y cada uno tiene la semántica que se le conoce por convención. El tercer
+argumento es lo que cambia: <code>substr</code> recibe un <strong>largo</strong>, <code>substring</code> una <strong>posición final</strong>.</p>
+<pre><code class="language-caper">substr("abcde", 1, 3)      // "bcd"  — tres caracteres desde la posición 1
+substring("abcde", 1, 3)   // "bc"   — desde la posición 1 hasta la 3, excluida
+</code></pre>
+<h2 id="las-posiciones-se-cuentan-en-caracteres-no-en-bytes"><a class="header" href="#las-posiciones-se-cuentan-en-caracteres-no-en-bytes">Las posiciones se cuentan en caracteres, no en bytes</a></h2>
+<p>Importa en español, donde las tildes y la <code>ñ</code> ocupan más de un byte.</p>
+<pre><code class="language-caper">index_of("mañana", "n")    // 4   — no 5
+char_at("mañana", 2)       // "ñ"
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="stdarrays"><a class="header" href="#stdarrays">std.arrays</a></h1>
 <pre><code class="language-caper">use std.arrays.{ sum, avg, filter, map, count };
@@ -967,6 +1020,7 @@ let periodo = join(partes, "-");                   // "CL-2026-03"
 <tr><td><code>count(arr)</code></td><td>Número de elementos (alias: <code>len</code>)</td></tr>
 <tr><td><code>push(arr, item)</code></td><td>Retorna nuevo array con <code>item</code> al final</td></tr>
 <tr><td><code>pop(arr)</code></td><td>Retorna <code>[ultimo, resto]</code> — no muta</td></tr>
+<tr><td><code>shift(arr)</code></td><td>Retorna el arreglo sin su primer elemento — no muta</td></tr>
 <tr><td><code>unshift(arr, item)</code></td><td>Retorna nuevo array con <code>item</code> al inicio</td></tr>
 <tr><td><code>first(arr)</code></td><td>Primer elemento</td></tr>
 <tr><td><code>last(arr)</code></td><td>Último elemento</td></tr>
@@ -974,20 +1028,24 @@ let periodo = join(partes, "-");                   // "CL-2026-03"
 <tr><td><code>reverse(arr)</code></td><td>Retorna array invertido</td></tr>
 <tr><td><code>sort(arr)</code></td><td>Retorna array ordenado ascendente</td></tr>
 <tr><td><code>unique(arr)</code></td><td>Elimina duplicados</td></tr>
-<tr><td><code>flatten(arr)</code></td><td>Aplana un nivel de anidamiento</td></tr>
+<tr><td><code>concat(a, b, ...)</code></td><td>Une dos o más arreglos en uno</td></tr>
+<tr><td><code>flatten(arr)</code> · <code>flat(arr)</code></td><td>Aplana un nivel de anidamiento</td></tr>
 <tr><td><code>flatten_deep(arr)</code></td><td>Aplana completamente</td></tr>
-<tr><td><code>contains(arr, val)</code></td><td><code>true</code> si el valor está en el array</td></tr>
+<tr><td><code>contains(arr, val)</code> · <code>includes(arr, val)</code></td><td><code>true</code> si el valor está en el array</td></tr>
 <tr><td><code>index_of(arr, val)</code></td><td>Índice del valor (o <code>-1</code>)</td></tr>
 <tr><td><code>sum(arr)</code></td><td>Suma de todos los elementos numéricos</td></tr>
 <tr><td><code>avg(arr)</code></td><td>Promedio de los elementos numéricos</td></tr>
-<tr><td><code>min_of(arr)</code></td><td>El mínimo del array</td></tr>
-<tr><td><code>max_of(arr)</code></td><td>El máximo del array</td></tr>
+<tr><td><code>min_of(arr)</code> · <code>min(arr)</code></td><td>El mínimo del array</td></tr>
+<tr><td><code>max_of(arr)</code> · <code>max(arr)</code></td><td>El máximo del array</td></tr>
 <tr><td><code>zip(arr1, arr2)</code></td><td><code>[[arr1[0],arr2[0]], ...]</code></td></tr>
 <tr><td><code>range(start, end)</code></td><td>Array <code>[start, ..., end-1]</code></td></tr>
-<tr><td><code>range(start, end, step)</code></td><td>Con paso personalizado</td></tr>
 </tbody>
 </table>
 </div>
+<p>Los de orden superior —<code>map</code>, <code>filter</code>, <code>reduce</code>, <code>find</code>, <code>any</code>, <code>all</code>, <code>sort_by</code>— se usan sobre
+arreglos y los documenta este mismo módulo más abajo. <code>find_all</code> y <code>find_index</code> viven en
+<a href="#stdsearch">std.search</a>; <code>group_by</code> y <code>partition</code>, en <a href="#stdsort">std.sort</a>.
+| <code>range(start, end, step)</code> | Con paso personalizado |</p>
 <h2 id="hof-funciones-de-orden-superior"><a class="header" href="#hof-funciones-de-orden-superior">HOF (funciones de orden superior)</a></h2>
 <div class="table-wrapper">
 <table>
@@ -1042,6 +1100,9 @@ let total_desc = sum(descuentos);
 <tr><td><code>merge(obj1, obj2)</code></td><td>Une dos objetos (obj2 prevalece en conflicto)</td></tr>
 <tr><td><code>omit(obj, keys)</code></td><td>Retorna objeto sin las claves indicadas</td></tr>
 <tr><td><code>pick(obj, keys)</code></td><td>Retorna objeto solo con las claves indicadas</td></tr>
+<tr><td><code>set(obj, key, val)</code></td><td>Copia del objeto con la clave puesta en ese valor</td></tr>
+<tr><td><code>delete(obj, key)</code></td><td>Copia del objeto sin esa clave</td></tr>
+<tr><td><code>from_entries(pares)</code></td><td>Arma un objeto desde pares <code>[clave, valor]</code> — la vuelta de <code>entries</code></td></tr>
 <tr><td><code>count(obj)</code></td><td>Número de claves</td></tr>
 </tbody>
 </table>
@@ -1072,6 +1133,24 @@ let completo = merge(base, extras);
 let publico  = pick(empleado, ["nombre", "cargo"]);
 let sin_rut  = omit(empleado, ["rut"]);
 </code></pre>
+<h2 id="nada-muta"><a class="header" href="#nada-muta">Nada muta</a></h2>
+<p><code>set</code> y <code>delete</code> devuelven una <strong>copia</strong> y dejan el original intacto, igual que <code>push</code> sobre
+arreglos. En un lenguaje determinista conviene que nada cambie a espaldas de quien llama.</p>
+<pre><code class="language-caper">use std.objects.{ set, delete, keys };
+
+let base = { a: 1, b: 2 };
+let con_c = set(base, "c", 3);      // { a: 1, b: 2, c: 3 }
+let sin_a = delete(base, "a");      // { b: 2 }
+keys(base);                          // ["a", "b"]  — intacto
+</code></pre>
+<p>Borrar una clave que no existe no es un error: devuelve la copia igual. Y el orden de las demás
+claves se conserva.</p>
+<h2 id="entries-y-from_entries-son-ida-y-vuelta"><a class="header" href="#entries-y-from_entries-son-ida-y-vuelta"><code>entries</code> y <code>from_entries</code> son ida y vuelta</a></h2>
+<pre><code class="language-caper">use std.objects.{ entries, from_entries };
+
+let o = { a: 1, b: 2 };
+from_entries(entries(o));   // { a: 1, b: 2 }
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="stdtypes"><a class="header" href="#stdtypes">std.types</a></h1>
 <pre><code class="language-caper">use std.types.{ type_of, is_null, number, bool };
@@ -1090,9 +1169,11 @@ let sin_rut  = omit(empleado, ["rut"]);
 <tr><td><code>is_bool(v)</code></td><td><code>true</code> si es booleano</td></tr>
 <tr><td><code>is_array(v)</code></td><td><code>true</code> si es array</td></tr>
 <tr><td><code>is_object(v)</code></td><td><code>true</code> si es objeto</td></tr>
-<tr><td><code>number(v)</code></td><td>Coerce a número (error si no parseable)</td></tr>
+<tr><td><code>is_function(v)</code></td><td><code>true</code> si es una función o un closure</td></tr>
+<tr><td><code>number(v)</code> · <code>to_number(v)</code></td><td>Coerce a número (error si no parseable)</td></tr>
 <tr><td><code>int(v)</code></td><td>Coerce a entero (trunca decimales)</td></tr>
-<tr><td><code>bool(v)</code></td><td>Coerce a booleano</td></tr>
+<tr><td><code>bool(v)</code> · <code>to_bool(v)</code></td><td>Coerce a booleano</td></tr>
+<tr><td><code>to_string(v)</code></td><td>Coerce a string — lo resuelve <code>std.strings.str</code></td></tr>
 </tbody>
 </table>
 </div>
@@ -1115,6 +1196,15 @@ if not is_number(TASA) {
     throw { code: "TIPO_INVALIDO", message: "TASA debe ser un número" };
 }
 </code></pre>
+<h2 id="el-contexto-no-se-convierte-solo"><a class="header" href="#el-contexto-no-se-convierte-solo">El contexto no se convierte solo</a></h2>
+<p>Los valores que entran por el contexto llegan con el tipo que traen. Un número mandado como texto
+<strong>queda como texto</strong>, y compararlo con un número es un error de tipo, no una coerción silenciosa:</p>
+<pre><code class="language-caper">// contexto: { "SUELDO": "850000" }
+SUELDO &gt; 500000        // TYPE_ERROR: cannot compare number and string
+number(SUELDO) &gt; 500000   // true
+</code></pre>
+<p>Es a propósito: en un motor de cálculo, adivinar tipos es peor que fallar temprano. Si quien arma
+el contexto manda números como texto, conviene convertirlos ahí y no en cada script.</p>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="stdjson"><a class="header" href="#stdjson">std.json</a></h1>
 <pre><code class="language-caper">use std.json.{ json_encode, json_decode, json_valid };
@@ -1824,11 +1914,11 @@ main {
 
         <script src="elasticlunr-ef4e11c1.min.js"></script>
         <script src="mark-09e88c2c.min.js"></script>
-        <script src="searcher-c2a407aa.js"></script>
+        <script src="searcher-09f2665d.js"></script>
 
         <script src="clipboard-1626706a.min.js"></script>
         <script src="highlight-abc7f01d.js"></script>
-        <script src="book-a0b12cfe.js"></script>
+        <script src="book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
 

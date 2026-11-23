@@ -15,8 +15,8 @@
         <link rel="icon" href="../favicon-de23e50b.svg">
         <link rel="shortcut icon" href="../favicon-8114d1fc.png">
         <link rel="stylesheet" href="../css/variables-8adf115d.css">
-        <link rel="stylesheet" href="../css/general-2459343d.css">
-        <link rel="stylesheet" href="../css/chrome-ae938929.css">
+        <link rel="stylesheet" href="../css/general-e96d0476.css">
+        <link rel="stylesheet" href="../css/chrome-d279d366.css">
         <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-f2e1ec26.js";
+            window.path_to_searchindex_js = "../searchindex-06ad227d.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-8427f7c4.js"></script>
+        <script src="../toc-472f8e94.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -199,6 +199,9 @@
 <tr><td><code>merge(obj1, obj2)</code></td><td>Une dos objetos (obj2 prevalece en conflicto)</td></tr>
 <tr><td><code>omit(obj, keys)</code></td><td>Retorna objeto sin las claves indicadas</td></tr>
 <tr><td><code>pick(obj, keys)</code></td><td>Retorna objeto solo con las claves indicadas</td></tr>
+<tr><td><code>set(obj, key, val)</code></td><td>Copia del objeto con la clave puesta en ese valor</td></tr>
+<tr><td><code>delete(obj, key)</code></td><td>Copia del objeto sin esa clave</td></tr>
+<tr><td><code>from_entries(pares)</code></td><td>Arma un objeto desde pares <code>[clave, valor]</code> — la vuelta de <code>entries</code></td></tr>
 <tr><td><code>count(obj)</code></td><td>Número de claves</td></tr>
 </tbody>
 </table>
@@ -228,6 +231,24 @@ let completo = merge(base, extras);
 // Seleccionar solo algunos campos
 let publico  = pick(empleado, ["nombre", "cargo"]);
 let sin_rut  = omit(empleado, ["rut"]);
+</code></pre>
+<h2 id="nada-muta"><a class="header" href="#nada-muta">Nada muta</a></h2>
+<p><code>set</code> y <code>delete</code> devuelven una <strong>copia</strong> y dejan el original intacto, igual que <code>push</code> sobre
+arreglos. En un lenguaje determinista conviene que nada cambie a espaldas de quien llama.</p>
+<pre><code class="language-caper">use std.objects.{ set, delete, keys };
+
+let base = { a: 1, b: 2 };
+let con_c = set(base, "c", 3);      // { a: 1, b: 2, c: 3 }
+let sin_a = delete(base, "a");      // { b: 2 }
+keys(base);                          // ["a", "b"]  — intacto
+</code></pre>
+<p>Borrar una clave que no existe no es un error: devuelve la copia igual. Y el orden de las demás
+claves se conserva.</p>
+<h2 id="entries-y-from_entries-son-ida-y-vuelta"><a class="header" href="#entries-y-from_entries-son-ida-y-vuelta"><code>entries</code> y <code>from_entries</code> son ida y vuelta</a></h2>
+<pre><code class="language-caper">use std.objects.{ entries, from_entries };
+
+let o = { a: 1, b: 2 };
+from_entries(entries(o));   // { a: 1, b: 2 }
 </code></pre>
 
                     </main>
@@ -274,11 +295,11 @@ let sin_rut  = omit(empleado, ["rut"]);
 
         <script src="../elasticlunr-ef4e11c1.min.js"></script>
         <script src="../mark-09e88c2c.min.js"></script>
-        <script src="../searcher-c2a407aa.js"></script>
+        <script src="../searcher-09f2665d.js"></script>
 
         <script src="../clipboard-1626706a.min.js"></script>
         <script src="../highlight-abc7f01d.js"></script>
-        <script src="../book-a0b12cfe.js"></script>
+        <script src="../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
 

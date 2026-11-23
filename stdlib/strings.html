@@ -15,8 +15,8 @@
         <link rel="icon" href="../favicon-de23e50b.svg">
         <link rel="shortcut icon" href="../favicon-8114d1fc.png">
         <link rel="stylesheet" href="../css/variables-8adf115d.css">
-        <link rel="stylesheet" href="../css/general-2459343d.css">
-        <link rel="stylesheet" href="../css/chrome-ae938929.css">
+        <link rel="stylesheet" href="../css/general-e96d0476.css">
+        <link rel="stylesheet" href="../css/chrome-d279d366.css">
         <link rel="stylesheet" href="../css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
@@ -36,10 +36,10 @@
             const path_to_root = "../";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "../searchindex-f2e1ec26.js";
+            window.path_to_searchindex_js = "../searchindex-06ad227d.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="../toc-8427f7c4.js"></script>
+        <script src="../toc-472f8e94.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -195,8 +195,8 @@
 <tr><td><code>upper(s)</code></td><td>Mayúsculas</td></tr>
 <tr><td><code>lower(s)</code></td><td>Minúsculas</td></tr>
 <tr><td><code>trim(s)</code></td><td>Elimina espacios al inicio y fin</td></tr>
-<tr><td><code>ltrim(s)</code></td><td>Elimina espacios al inicio</td></tr>
-<tr><td><code>rtrim(s)</code></td><td>Elimina espacios al fin</td></tr>
+<tr><td><code>ltrim(s)</code> · <code>trim_start(s)</code></td><td>Elimina espacios al inicio</td></tr>
+<tr><td><code>rtrim(s)</code> · <code>trim_end(s)</code></td><td>Elimina espacios al fin</td></tr>
 <tr><td><code>contains(s, sub)</code></td><td><code>true</code> si <code>sub</code> está en <code>s</code></td></tr>
 <tr><td><code>starts_with(s, prefix)</code></td><td><code>true</code> si <code>s</code> comienza con <code>prefix</code></td></tr>
 <tr><td><code>ends_with(s, suffix)</code></td><td><code>true</code> si <code>s</code> termina con <code>suffix</code></td></tr>
@@ -204,10 +204,16 @@
 <tr><td><code>replace_all(s, from, to)</code></td><td>Reemplaza todas las ocurrencias</td></tr>
 <tr><td><code>split(s, sep)</code></td><td>Divide string en array</td></tr>
 <tr><td><code>join(arr, sep)</code></td><td>Une array en string</td></tr>
-<tr><td><code>substr(s, start, length)</code></td><td>Subcadena</td></tr>
+<tr><td><code>substr(s, start, length)</code></td><td>Subcadena por <strong>largo</strong></td></tr>
+<tr><td><code>substring(s, start, end)</code></td><td>Subcadena hasta la posición <code>end</code>, excluida</td></tr>
+<tr><td><code>char_at(s, i)</code></td><td>El carácter en la posición <code>i</code> (vacío fuera de rango)</td></tr>
+<tr><td><code>index_of(s, sub)</code></td><td>Posición de la primera aparición, o <code>-1</code></td></tr>
+<tr><td><code>count_occurrences(s, sub)</code></td><td>Cuántas veces aparece <code>sub</code>, sin superponerse</td></tr>
+<tr><td><code>repeat(s, n)</code></td><td>Repite el texto <code>n</code> veces</td></tr>
 <tr><td><code>pad_left(s, n, char)</code></td><td>Rellena por la izquierda hasta longitud <code>n</code></td></tr>
 <tr><td><code>pad_right(s, n, char)</code></td><td>Rellena por la derecha</td></tr>
-<tr><td><code>str(v)</code></td><td>Convierte cualquier valor a string</td></tr>
+<tr><td><code>str(v)</code> · <code>to_string(v)</code></td><td>Convierte cualquier valor a string</td></tr>
+<tr><td><code>to_number(s)</code></td><td>Convierte el texto a número (error si no se puede)</td></tr>
 </tbody>
 </table>
 </div>
@@ -232,6 +238,17 @@ let sueldo  = campos[1];   // "850000" (string)
 // Construir un código
 let partes  = ["CL", "2026", "03"];
 let periodo = join(partes, "-");                   // "CL-2026-03"
+</code></pre>
+<h2 id="substr-y-substring-no-son-lo-mismo"><a class="header" href="#substr-y-substring-no-son-lo-mismo"><code>substr</code> y <code>substring</code> no son lo mismo</a></h2>
+<p>Los dos nombres existen y cada uno tiene la semántica que se le conoce por convención. El tercer
+argumento es lo que cambia: <code>substr</code> recibe un <strong>largo</strong>, <code>substring</code> una <strong>posición final</strong>.</p>
+<pre><code class="language-caper">substr("abcde", 1, 3)      // "bcd"  — tres caracteres desde la posición 1
+substring("abcde", 1, 3)   // "bc"   — desde la posición 1 hasta la 3, excluida
+</code></pre>
+<h2 id="las-posiciones-se-cuentan-en-caracteres-no-en-bytes"><a class="header" href="#las-posiciones-se-cuentan-en-caracteres-no-en-bytes">Las posiciones se cuentan en caracteres, no en bytes</a></h2>
+<p>Importa en español, donde las tildes y la <code>ñ</code> ocupan más de un byte.</p>
+<pre><code class="language-caper">index_of("mañana", "n")    // 4   — no 5
+char_at("mañana", 2)       // "ñ"
 </code></pre>
 
                     </main>
@@ -278,11 +295,11 @@ let periodo = join(partes, "-");                   // "CL-2026-03"
 
         <script src="../elasticlunr-ef4e11c1.min.js"></script>
         <script src="../mark-09e88c2c.min.js"></script>
-        <script src="../searcher-c2a407aa.js"></script>
+        <script src="../searcher-09f2665d.js"></script>
 
         <script src="../clipboard-1626706a.min.js"></script>
         <script src="../highlight-abc7f01d.js"></script>
-        <script src="../book-a0b12cfe.js"></script>
+        <script src="../book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
 
