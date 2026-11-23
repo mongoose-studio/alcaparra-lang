@@ -14,7 +14,12 @@ pub fn call(name: &str, args: &[Value], _line: usize) -> Result<Option<Value>, C
         "is_bool"   => is_bool(args)?,
         "is_array"  => is_array(args)?,
         "is_object" => is_object(args)?,
-        "number"    => to_number(args)?,
+        "number"      => to_number(args)?,
+        // Nombres que anuncia el catalogo de `caper -m`. `to_string` lo resuelve
+        // `std.strings.str`, que el despacho ve antes que este modulo.
+        "to_number"   => to_number(args)?,
+        "to_bool"     => to_bool(args)?,
+        "is_function" => is_function(args)?,
         "int"       => to_int(args)?,
         "bool"      => to_bool(args)?,
         _ => return Ok(None),
@@ -83,4 +88,9 @@ fn to_int(args: &[Value]) -> Result<Value, CaperError> {
 fn to_bool(args: &[Value]) -> Result<Value, CaperError> {
     let v = require_arg(args, "bool")?;
     Ok(Value::Bool(v.is_truthy()))
+}
+
+fn is_function(args: &[Value]) -> Result<Value, CaperError> {
+    let v = require_arg(args, "is_function")?;
+    Ok(Value::Bool(matches!(v, Value::Function(_) | Value::NativeFunction(_))))
 }
