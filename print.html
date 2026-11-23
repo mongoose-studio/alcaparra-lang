@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-06ad227d.js";
+            window.path_to_searchindex_js = "searchindex-41ed7006.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-472f8e94.js"></script>
@@ -446,6 +446,21 @@ let division = a / b;    // siempre Decimal, nunca división entera
 let modulo   = a % b;    // resto de la división
 let potencia = a ** b;   // a elevado a b
 </code></pre>
+<h3 id="los-operadores-aritméticos-no-convierten"><a class="header" href="#los-operadores-aritméticos-no-convierten">Los operadores aritméticos no convierten</a></h3>
+<p>Un string <strong>no</strong> es un número, aunque contenga dígitos. <code>"100" * 2</code> es un error de tipo, no 200:</p>
+<pre><code class="language-caper">let s = "1850000";     // ojo: texto, no número
+
+let mal  = s * 26;              // TYPE_ERROR
+let bien = to_number(s) * 26;   // 48100000
+</code></pre>
+<p>Esto es a propósito, y es de las decisiones que más protegen un cálculo. Un contexto JSON trae
+números como string con facilidad —PostgreSQL serializa <code>numeric</code> así, y muchos lenguajes lo
+arrastran hasta el JSON—. Cuando la conversión era automática, <code>"1850000" * 26 / 30</code> daba un
+resultado correcto y la primera suma lo concatenaba: el cálculo salía mal <strong>sin un solo error</strong>.
+Mejor que reviente en la primera operación.</p>
+<p>Lo mismo vale para los booleanos: <code>true</code> no es 1.</p>
+<p>Para convertir a propósito están <a href="#stdtypes"><code>to_number</code></a> y
+<a href="#stdtypes"><code>to_string</code></a>, que es justamente lo que hacen.</p>
 <h2 id="comparación"><a class="header" href="#comparación">Comparación</a></h2>
 <pre><code class="language-caper">a == b    // igual
 a != b    // distinto
@@ -465,6 +480,15 @@ not a      // NOT lógico
 <p>Cualquier valor puede concatenarse con un string — se convierte automáticamente:</p>
 <pre><code class="language-caper">let msg = "Total: " + 850000;     // "Total: 850000"
 </code></pre>
+<blockquote>
+<p><strong><code>+</code> es la excepción.</strong> Es a la vez suma y concatenación, así que cuando <strong>cualquiera</strong> de los
+dos lados es string el resultado es un string, no un error:</p>
+<pre><code class="language-caper">let a = 100 + "50";    // "10050", no 150
+</code></pre>
+<p>Es lo que permite escribir mensajes de error sin convertir a mano, pero significa que un
+acumulador numérico que se sume con un string del contexto se vuelve texto en silencio. Si el
+valor puede venir como string, pásalo por <code>to_number</code> antes de acumularlo.</p>
+</blockquote>
 <h2 id="acceso-a-colecciones"><a class="header" href="#acceso-a-colecciones">Acceso a colecciones</a></h2>
 <pre><code class="language-caper">arr[0]         // acceso por índice base 0
 arr[-1]        // último elemento (índice negativo)
