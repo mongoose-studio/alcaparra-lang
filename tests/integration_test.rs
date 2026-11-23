@@ -2280,3 +2280,275 @@ fn try_como_valor_final_de_un_bloque() {
     let src = r#"let r = if true { try { 1 / 0 } catch e { -1 } } else { 0 }; emit r;"#;
     assert_eq!(run(src, ctx(&[])), num(dec!(-1)));
 }
+
+// ---------------------------------------------------------------------------
+// Regresión: `round_half_up`
+//
+// `std.math` la anunciaba en su catálogo y no estaba implementada. `round` usa
+// la estrategia por defecto de rust_decimal, que es medio al par, y las
+// liquidaciones de sueldo en Chile redondean medio arriba.
+// ---------------------------------------------------------------------------
+
+#[test]
+fn round_half_up_sube_el_medio() {
+    let src = "use std.math.{ round_half_up }; emit [round_half_up(0.5, 0), round_half_up(1.5, 0), round_half_up(2.5, 0), round_half_up(3.5, 0)];";
+    assert_eq!(
+        run(src, ctx(&[])),
+        Value::Array(vec![num(dec!(1)), num(dec!(2)), num(dec!(3)), num(dec!(4))]),
+    );
+}
+
+#[test]
+fn round_sigue_siendo_medio_al_par() {
+    // `round` no cambia: cambiarla seria romper la semantica del lenguaje.
+    let src = "use std.math.{ round }; emit [round(0.5, 0), round(1.5, 0), round(2.5, 0), round(3.5, 0)];";
+    assert_eq!(
+        run(src, ctx(&[])),
+        Value::Array(vec![num(dec!(0)), num(dec!(2)), num(dec!(2)), num(dec!(4))]),
+    );
+}
+
+#[test]
+fn round_half_up_con_decimales_y_negativos() {
+    let src = "use std.math.{ round_half_up }; emit [round_half_up(1.005, 2), round_half_up(-2.5, 0)];";
+    assert_eq!(run(src, ctx(&[])), Value::Array(vec![num(dec!(1.01)), num(dec!(-3))]));
+}
+
+// ---------------------------------------------------------------------------
+// El catálogo de `caper -m` no puede mentir
+//
+// `MODULES` es una tabla escrita a mano, separada de los `match` que implementan
+// cada función, y las dos listas se habían separado: 26 nombres anunciados no
+// existían en tiempo de ejecución, y el editor los autocompletaba igual. Esta
+// prueba recorre el catálogo y exige que cada nombre sea despachable.
+// ---------------------------------------------------------------------------
+
+#[test]
+fn todas_las_funciones_del_catalogo_existen() {
+    use alcaparra::stdlib::{HOF_NAMES, MODULES};
+
+    // Formas de argumentos con las que se tantea cada nombre. El despacho es
+    // polimórfico —`len`, `count`, `min` e `index_of` los reclaman varios
+    // módulos según el tipo— así que basta con que UNA forma sea atendida.
+    let formas: Vec<Vec<alcaparra::Value>> = vec![
+        vec![],
+        vec![num(dec!(1))],
+        vec![num(dec!(1)), num(dec!(2))],
+        vec![num(dec!(1)), num(dec!(2)), num(dec!(3))],
+        vec![s("abc")],
+        vec![s("abc"), s("b")],
+        vec![s("abc"), num(dec!(1))],
+        vec![s("abc"), num(dec!(1)), num(dec!(2))],
+        vec![Value::Array(vec![num(dec!(1)), num(dec!(2))])],
+        vec![Value::Array(vec![num(dec!(1))]), num(dec!(1))],
+        vec![Value::Array(vec![num(dec!(1))]), Value::Array(vec![num(dec!(2))])],
+        vec![obj(&[("a", num(dec!(1)))])],
+        vec![obj(&[("a", num(dec!(1)))]), s("a")],
+        vec![obj(&[("a", num(dec!(1)))]), s("a"), num(dec!(2))],
+        vec![Value::Array(vec![Value::Array(vec![s("a"), num(dec!(1))])])],
+        vec![Value::Bool(true)],
+    ];
+
+    let mut faltan: Vec<String> = vec![];
+
+    for modulo in MODULES {
+        for funcion in modulo.functions {
+            if HOF_NAMES.contains(funcion) {
+                continue; // los intercepta la VM, no la stdlib
+            }
+            let atendida = formas.iter().any(|args| {
+                !matches!(
+                    alcaparra::stdlib::call(funcion, args.clone(), 1),
+                    Ok(None)
+                )
+            });
+            if !atendida {
+                faltan.push(format!("{}.{}", modulo.path, funcion));
+            }
+        }
+    }
+
+    assert!(
+        faltan.is_empty(),
+        "el catálogo de `caper -m` anuncia funciones que ningún módulo despacha:\n  {}",
+        faltan.join("\n  "),
+    );
+}
+
+// ---------------------------------------------------------------------------
+// Funciones que el catálogo anunciaba y no existían (§11.4 del contrato ATLAS)
+// ---------------------------------------------------------------------------
+
+#[test]
+fn math_clamp_acota_el_rango() {
+    let src = "use std.math.{ clamp }; emit [clamp(0, 1, 10), clamp(5, 1, 10), clamp(50, 1, 10)];";
+    assert_eq!(run(src, ctx(&[])), Value::Array(vec![num(dec!(1)), num(dec!(5)), num(dec!(10))]));
+}
+
+#[test]
+fn math_clamp_rechaza_un_rango_invertido() {
+    let r = run_ok("use std.math.{ clamp }; emit clamp(5, 10, 1);", ctx(&[]));
+    assert!(r.is_err());
+}
+
+#[test]
+fn math_log_y_log10() {
+    let src = "use std.math.{ log, log10 }; emit [log(8, 2), log10(100)];";
+    match run(src, ctx(&[])) {
+        Value::Array(v) => {
+            // Son aproximaciones: no hay logaritmo exacto en decimal.
+            let tres: rust_decimal::Decimal = dec!(3);
+            let dos:  rust_decimal::Decimal = dec!(2);
+            let a = match &v[0] { Value::Number(n) => *n, otro => panic!("{otro:?}") };
+            let b = match &v[1] { Value::Number(n) => *n, otro => panic!("{otro:?}") };
+            assert!((a - tres).abs() < dec!(0.0001), "log(8,2) = {a}");
+            assert!((b - dos).abs()  < dec!(0.0001), "log10(100) = {b}");
+        }
+        otro => panic!("{otro:?}"),
+    }
+}
+
+#[test]
+fn math_log_rechaza_cero_y_base_uno() {
+    assert!(run_ok("use std.math.{ log }; emit log(0);", ctx(&[])).is_err());
+    assert!(run_ok("use std.math.{ log }; emit log(8, 1);", ctx(&[])).is_err());
+}
+
+#[test]
+fn math_pi_y_e_son_constantes() {
+    let src = "use std.math.{ pi, e }; emit [pi() > 3.14, pi() < 3.15, e() > 2.71, e() < 2.72];";
+    assert_eq!(
+        run(src, ctx(&[])),
+        Value::Array(vec![b(true), b(true), b(true), b(true)]),
+    );
+}
+
+#[test]
+fn min_y_max_funcionan_sobre_numeros_y_sobre_arreglos() {
+    // `std.math` ve estos nombres antes que `std.arrays`: si no cede cuando el
+    // primer argumento no es un número, `min([1, 2])` queda inalcanzable.
+    let src = "use std.math.{ min, max }; emit [min(3, 1), max(3, 1), min([3, 1, 2]), max([3, 1, 2])];";
+    assert_eq!(
+        run(src, ctx(&[])),
+        Value::Array(vec![num(dec!(1)), num(dec!(3)), num(dec!(1)), num(dec!(3))]),
+    );
+}
+
+#[test]
+fn strings_substring_y_substr_son_funciones_distintas() {
+    // `substr` recibe un largo; `substring`, la posición final.
+    let src = r#"use std.strings.{ substr, substring }; emit [substr("abcde", 1, 3), substring("abcde", 1, 3)];"#;
+    assert_eq!(run(src, ctx(&[])), Value::Array(vec![s("bcd"), s("bc")]));
+}
+
+#[test]
+fn strings_substring_acota_y_tolera_rangos_vacios() {
+    let src = r#"use std.strings.{ substring }; emit [substring("abc", 1, 99), substring("abc", 2, 1), substring("abc", 1)];"#;
+    assert_eq!(run(src, ctx(&[])), Value::Array(vec![s("bc"), s(""), s("bc")]));
+}
+
+#[test]
+fn strings_index_of_y_char_at_cuentan_caracteres() {
+    // Con tildes los bytes y los caracteres no coinciden: `ñ` ocupa dos bytes.
+    let src = r#"use std.strings.{ index_of, char_at }; emit [index_of("mañana", "n"), char_at("mañana", 2), index_of("abc", "z")];"#;
+    assert_eq!(run(src, ctx(&[])), Value::Array(vec![num(dec!(4)), s("ñ"), num(dec!(-1))]));
+}
+
+#[test]
+fn strings_repeat_y_count_occurrences() {
+    let src = r#"use std.strings.{ repeat, count_occurrences }; emit [repeat("ab", 3), repeat("a", 0), count_occurrences("abcabc", "bc"), count_occurrences("abc", "")];"#;
+    assert_eq!(
+        run(src, ctx(&[])),
+        Value::Array(vec![s("ababab"), s(""), num(dec!(2)), num(dec!(0))]),
+    );
+}
+
+#[test]
+fn strings_alias_del_catalogo() {
+    let src = r#"use std.strings.{ trim_start, trim_end, to_string, to_number }; emit [trim_start("  a"), trim_end("a  "), to_string(42), to_number("42")];"#;
+    assert_eq!(
+        run(src, ctx(&[])),
+        Value::Array(vec![s("a"), s("a"), s("42"), num(dec!(42))]),
+    );
+}
+
+#[test]
+fn arrays_shift_y_concat_no_mutan() {
+    let src = r#"
+        use std.arrays.{ shift, concat };
+        let base = [1, 2, 3];
+        emit [shift(base), concat([1], [2], [3]), shift([]), base];
+    "#;
+    assert_eq!(
+        run(src, ctx(&[])),
+        Value::Array(vec![
+            Value::Array(vec![num(dec!(2)), num(dec!(3))]),
+            Value::Array(vec![num(dec!(1)), num(dec!(2)), num(dec!(3))]),
+            Value::Array(vec![]),
+            Value::Array(vec![num(dec!(1)), num(dec!(2)), num(dec!(3))]),
+        ]),
+    );
+}
+
+#[test]
+fn arrays_alias_includes_y_flat() {
+    let src = "use std.arrays.{ includes, flat }; emit [includes([1,2], 1), includes([1,2], 9), flat([[1],[2]])];";
+    assert_eq!(
+        run(src, ctx(&[])),
+        Value::Array(vec![b(true), b(false), Value::Array(vec![num(dec!(1)), num(dec!(2))])]),
+    );
+}
+
+#[test]
+fn objects_set_y_delete_no_mutan() {
+    let src = r#"
+        use std.objects.{ set, delete, keys };
+        let base = { a: 1, b: 2 };
+        emit [set(base, "c", 3), delete(base, "a"), delete(base, "zzz"), keys(base)];
+    "#;
+    assert_eq!(
+        run(src, ctx(&[])),
+        Value::Array(vec![
+            obj(&[("a", num(dec!(1))), ("b", num(dec!(2))), ("c", num(dec!(3)))]),
+            obj(&[("b", num(dec!(2)))]),
+            obj(&[("a", num(dec!(1))), ("b", num(dec!(2)))]),
+            Value::Array(vec![s("a"), s("b")]),
+        ]),
+    );
+}
+
+#[test]
+fn objects_from_entries_es_la_vuelta_de_entries() {
+    let src = r#"
+        use std.objects.{ entries, from_entries };
+        let original = { a: 1, b: 2 };
+        emit from_entries(entries(original));
+    "#;
+    assert_eq!(run(src, ctx(&[])), obj(&[("a", num(dec!(1))), ("b", num(dec!(2)))]));
+}
+
+#[test]
+fn types_is_function_y_alias() {
+    let src = r#"
+        use std.types.{ is_function, to_number, to_bool };
+        let f = |x| => x;
+        emit [is_function(f), is_function(1), to_number("42"), to_bool(1)];
+    "#;
+    assert_eq!(
+        run(src, ctx(&[])),
+        Value::Array(vec![b(true), b(false), num(dec!(42)), b(true)]),
+    );
+}
+
+#[test]
+fn round_admite_decimales_negativos() {
+    // Documentado en docs/src/stdlib/math.md y no implementado: fallaba con
+    // «argument 2 must be a non-negative integer».
+    let src = "use std.math.{ round, round_half_up }; emit [round(1234.567, -2), round_half_up(1235, -1), round(1250, -2)];";
+    assert_eq!(
+        run(src, ctx(&[])),
+        // El último muestra la diferencia de estrategia: 1250 a centenas es 1200
+        // medio-al-par y 1300 medio-arriba.
+        Value::Array(vec![num(dec!(1200)), num(dec!(1240)), num(dec!(1200))]),
+    );
+}
