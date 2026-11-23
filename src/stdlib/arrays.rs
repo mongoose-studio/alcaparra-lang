@@ -54,9 +54,27 @@ pub fn call(name: &str, args: &[Value], line: usize) -> Result<Option<Value>, Ca
         "unique"       => unique(args, line)?,
         "flatten"      => flatten(args, line)?,
         "flatten_deep" => flatten_deep(args, line)?,
-        "index_of"     => index_of(args, line)?,
+        "index_of" => {
+            match args.first() {
+                Some(Value::Array(_)) => index_of(args, line)?,
+                _ => return Ok(None),
+            }
+        }
         "sum"          => sum(args, line)?,
         "avg"          => avg(args, line)?,
+        // Nombres que el catalogo de `caper -m` anuncia. `min` y `max` llegan aca
+        // porque `std.math` cede cuando el primer argumento no es un numero.
+        "includes" => {
+            match args.first() {
+                Some(Value::Array(_)) => arr_contains(args, line)?,
+                _ => return Ok(None),
+            }
+        }
+        "flat"         => flatten(args, line)?,
+        "min"          => min_of(args, line)?,
+        "max"          => max_of(args, line)?,
+        "shift"        => shift(args, line)?,
+        "concat"       => concat(args, line)?,
         "min_of"       => min_of(args, line)?,
         "max_of"       => max_of(args, line)?,
         "zip"          => zip(args, line)?,
@@ -331,4 +349,24 @@ pub fn cmp_values(a: &Value, b: &Value, line: usize) -> Result<std::cmp::Orderin
             detail: format!("cannot compare {} and {}", a.type_name(), b.type_name()),
         }),
     }
+}
+
+/// Saca el primer elemento y devuelve el resto. Es el espejo de `pop`, que saca
+/// el ultimo: ninguna de las dos muta el arreglo original.
+fn shift(args: &[Value], fn_line: usize) -> Result<Value, CaperError> {
+    let _ = fn_line;
+    let arr = require_arr(args, 0, "shift")?;
+    if arr.is_empty() {
+        return Ok(Value::Array(vec![]));
+    }
+    Ok(Value::Array(arr[1..].to_vec()))
+}
+
+/// Une dos o mas arreglos en uno. Sin argumentos devuelve el arreglo vacio.
+fn concat(args: &[Value], _line: usize) -> Result<Value, CaperError> {
+    let mut salida = vec![];
+    for (i, _) in args.iter().enumerate() {
+        salida.extend(require_arr(args, i, "concat")?);
+    }
+    Ok(Value::Array(salida))
 }
