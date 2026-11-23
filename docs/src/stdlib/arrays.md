@@ -11,6 +11,7 @@ use std.arrays.{ sum, avg, filter, map, count };
 | `count(arr)` | Número de elementos (alias: `len`) |
 | `push(arr, item)` | Retorna nuevo array con `item` al final |
 | `pop(arr)` | Retorna `[ultimo, resto]` — no muta |
+| `shift(arr)` | Retorna el arreglo sin su primer elemento — no muta |
 | `unshift(arr, item)` | Retorna nuevo array con `item` al inicio |
 | `first(arr)` | Primer elemento |
 | `last(arr)` | Último elemento |
@@ -18,16 +19,21 @@ use std.arrays.{ sum, avg, filter, map, count };
 | `reverse(arr)` | Retorna array invertido |
 | `sort(arr)` | Retorna array ordenado ascendente |
 | `unique(arr)` | Elimina duplicados |
-| `flatten(arr)` | Aplana un nivel de anidamiento |
+| `concat(a, b, ...)` | Une dos o más arreglos en uno |
+| `flatten(arr)` · `flat(arr)` | Aplana un nivel de anidamiento |
 | `flatten_deep(arr)` | Aplana completamente |
-| `contains(arr, val)` | `true` si el valor está en el array |
+| `contains(arr, val)` · `includes(arr, val)` | `true` si el valor está en el array |
 | `index_of(arr, val)` | Índice del valor (o `-1`) |
 | `sum(arr)` | Suma de todos los elementos numéricos |
 | `avg(arr)` | Promedio de los elementos numéricos |
-| `min_of(arr)` | El mínimo del array |
-| `max_of(arr)` | El máximo del array |
+| `min_of(arr)` · `min(arr)` | El mínimo del array |
+| `max_of(arr)` · `max(arr)` | El máximo del array |
 | `zip(arr1, arr2)` | `[[arr1[0],arr2[0]], ...]` |
 | `range(start, end)` | Array `[start, ..., end-1]` |
+
+Los de orden superior —`map`, `filter`, `reduce`, `find`, `any`, `all`, `sort_by`— se usan sobre
+arreglos y los documenta este mismo módulo más abajo. `find_all` y `find_index` viven en
+[std.search](search.md); `group_by` y `partition`, en [std.sort](sort.md).
 | `range(start, end, step)` | Con paso personalizado |
 
 ## HOF (funciones de orden superior)

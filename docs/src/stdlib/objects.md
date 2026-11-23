@@ -16,6 +16,9 @@ use std.objects.{ keys, values, has, merge, pick, omit };
 | `merge(obj1, obj2)` | Une dos objetos (obj2 prevalece en conflicto) |
 | `omit(obj, keys)` | Retorna objeto sin las claves indicadas |
 | `pick(obj, keys)` | Retorna objeto solo con las claves indicadas |
+| `set(obj, key, val)` | Copia del objeto con la clave puesta en ese valor |
+| `delete(obj, key)` | Copia del objeto sin esa clave |
+| `from_entries(pares)` | Arma un objeto desde pares `[clave, valor]` — la vuelta de `entries` |
 | `count(obj)` | Número de claves |
 
 ## Ejemplos
@@ -45,4 +48,30 @@ let completo = merge(base, extras);
 // Seleccionar solo algunos campos
 let publico  = pick(empleado, ["nombre", "cargo"]);
 let sin_rut  = omit(empleado, ["rut"]);
+```
+
+## Nada muta
+
+`set` y `delete` devuelven una **copia** y dejan el original intacto, igual que `push` sobre
+arreglos. En un lenguaje determinista conviene que nada cambie a espaldas de quien llama.
+
+```caper
+use std.objects.{ set, delete, keys };
+
+let base = { a: 1, b: 2 };
+let con_c = set(base, "c", 3);      // { a: 1, b: 2, c: 3 }
+let sin_a = delete(base, "a");      // { b: 2 }
+keys(base);                          // ["a", "b"]  — intacto
+```
+
+Borrar una clave que no existe no es un error: devuelve la copia igual. Y el orden de las demás
+claves se conserva.
+
+## `entries` y `from_entries` son ida y vuelta
+
+```caper
+use std.objects.{ entries, from_entries };
+
+let o = { a: 1, b: 2 };
+from_entries(entries(o));   // { a: 1, b: 2 }
 ```
