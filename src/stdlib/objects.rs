@@ -17,6 +17,10 @@ pub fn call(name: &str, args: &[Value], _line: usize) -> Result<Option<Value>, C
         "merge"  => merge(args)?,
         "omit"   => omit(args)?,
         "pick"   => pick(args)?,
+        // Nombres que anuncia el catalogo de `caper -m`.
+        "set"          => set(args)?,
+        "delete"       => delete(args)?,
+        "from_entries" => from_entries(args)?,
         "count"  => {
             // count(obj) — solo para objetos; los arrays son manejados en el módulo arrays
             match args.first() {
@@ -146,4 +150,69 @@ fn pick(args: &[Value]) -> Result<Value, CaperError> {
 fn count_obj(args: &[Value]) -> Result<Value, CaperError> {
     let map = require_obj(args, 0, "count")?;
     Ok(Value::Number(Decimal::from(map.len())))
+}
+
+/// Devuelve una copia del objeto con la clave puesta en ese valor.
+///
+/// **No muta el original**, igual que `push` sobre arreglos: en un lenguaje
+/// determinista conviene que nada cambie a espaldas de quien llama. Si la clave
+/// ya existia se reemplaza su valor y conserva su posicion.
+fn set(args: &[Value]) -> Result<Value, CaperError> {
+    let mut obj = require_obj(args, 0, "set")?;
+    let clave = match args.get(1) {
+        Some(Value::Str(k)) => k.clone(),
+        _ => return Err(CaperError::ArgumentError {
+            func: "set".to_string(),
+            detail: "argument 2 must be a string".to_string(),
+        }),
+    };
+    let valor = args.get(2).cloned().unwrap_or(Value::Null);
+    obj.insert(clave, valor);
+    Ok(Value::Object(obj))
+}
+
+/// Devuelve una copia del objeto sin esa clave. Si no estaba, devuelve la copia
+/// igual y no falla.
+fn delete(args: &[Value]) -> Result<Value, CaperError> {
+    let obj = require_obj(args, 0, "delete")?;
+    let clave = match args.get(1) {
+        Some(Value::Str(k)) => k.clone(),
+        _ => return Err(CaperError::ArgumentError {
+            func: "delete".to_string(),
+            detail: "argument 2 must be a string".to_string(),
+        }),
+    };
+    // `shift_remove` conserva el orden de las demas claves; `swap_remove` no.
+    let mut salida = obj;
+    salida.shift_remove(&clave);
+    Ok(Value::Object(salida))
+}
+
+/// Arma un objeto desde pares `[clave, valor]`. Es la vuelta de `entries`.
+fn from_entries(args: &[Value]) -> Result<Value, CaperError> {
+    let pares = match args.first() {
+        Some(Value::Array(a)) => a.clone(),
+        _ => return Err(CaperError::ArgumentError {
+            func: "from_entries".to_string(),
+            detail: "argument 1 must be an array of [key, value] pairs".to_string(),
+        }),
+    };
+
+    let mut obj = IndexMap::new();
+    for par in pares {
+        match par {
+            Value::Array(ref p) if p.len() == 2 => {
+                let clave = match &p[0] {
+                    Value::Str(k) => k.clone(),
+                    otro => otro.to_string(),
+                };
+                obj.insert(clave, p[1].clone());
+            }
+            otro => return Err(CaperError::ArgumentError {
+                func: "from_entries".to_string(),
+                detail: format!("cada entrada debe ser un par [clave, valor], llego {}", otro.type_name()),
+            }),
+        }
+    }
+    Ok(Value::Object(obj))
 }
