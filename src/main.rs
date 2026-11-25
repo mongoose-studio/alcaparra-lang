@@ -463,9 +463,9 @@ fn cmd_run(args: &[String]) {
         let mut aliases = global.resolved_aliases(&cfg_dir);
         aliases.extend(cfg.resolved_aliases(&cfg_dir));
 
-        // Contexto: global ← proyecto ← CLI (gana)
+        // Contexto: global ← manifiesto ← archivos del manifiesto ← CLI (gana)
         let mut context = json_value_to_context(&global.context);
-        context.extend(json_value_to_context(&cfg.context));
+        context.extend(json_value_to_context(&project_context(&cfg, &cfg_dir)));
         context.extend(parse_context_args(args));
 
         // Plugins: global ← proyecto (aditivo, proyecto gana en conflicto)
@@ -487,7 +487,7 @@ fn cmd_run(args: &[String]) {
         // Buscar .capercfg adyacente para aliases y contexto
         if let Some((cfg, cfg_dir)) = config::find_config(&base_dir) {
             aliases.extend(cfg.resolved_aliases(&cfg_dir));
-            context.extend(json_value_to_context(&cfg.context));
+            context.extend(json_value_to_context(&project_context(&cfg, &cfg_dir)));
             plugins.extend(cfg.plugins);
         }
 
@@ -639,6 +639,18 @@ fn error_to_json(e: &alcaparra::CaperError) -> serde_json::Value {
 // ---------------------------------------------------------------------------
 // Parseo del contexto
 // ---------------------------------------------------------------------------
+
+/// Contexto del proyecto: el inline del manifiesto más sus `context_file`.
+///
+/// Un `context_file` que no se puede leer **corta la corrida**. No se degrada a
+/// una advertencia: si el manifiesto dice que el contexto sale de un archivo y ese
+/// archivo no está, lo que se correría no es el caso que se pidió correr.
+fn project_context(cfg: &config::CaperConfig, cfg_dir: &std::path::Path) -> serde_json::Value {
+    cfg.resolved_context(cfg_dir).unwrap_or_else(|e| {
+        eprintln!("Error: {e}");
+        process::exit(1);
+    })
+}
 
 fn parse_context_args(args: &[String]) -> HashMap<String, Value> {
     let mut i = 0;

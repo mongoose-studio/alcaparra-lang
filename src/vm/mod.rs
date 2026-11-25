@@ -365,7 +365,11 @@ impl Vm {
                 let val = self.eval_expr(operand)?;
                 match op {
                     UnaryOp::Neg => {
-                        match val.as_decimal() {
+                        // Estricta a propósito: `as_decimal()` convertía `-"5"` en `-5`, y la VM
+                        // de bytecode (executor.rs, `Instruction::Neg`) exige `Value::Number`
+                        // desde el arreglo de la aritmética. Dos motores con dos respuestas para
+                        // el mismo script es lo único que no se puede dejar pasar.
+                        match val.as_number() {
                             Some(n) => Ok(Value::Number(-n)),
                             None => Err(CaperError::TypeError {
                                 line: *line,
@@ -1023,11 +1027,25 @@ impl Vm {
                 indexed.sort_by(|(_, a), (_, b)| {
                     if err.is_some() { return std::cmp::Ordering::Equal; }
                     match self.call_function(Rc::clone(&fd), vec![a.clone(), b.clone()], line) {
-                        Ok(v) => match v.as_decimal() {
-                            Some(n) if n < rust_decimal::Decimal::ZERO => std::cmp::Ordering::Less,
-                            Some(n) if n > rust_decimal::Decimal::ZERO => std::cmp::Ordering::Greater,
-                            _ => std::cmp::Ordering::Equal,
-                        },
+                        // Las mismas dos formas que acepta la VM de bytecode, y los mismos
+                        // rechazos: un comparador que devuelve otra cosa es un error y no un
+                        // «son iguales» silencioso. Ver executor.rs,
+                        // `comparator_wants_swap`.
+                        Ok(Value::Number(n)) if n < rust_decimal::Decimal::ZERO => std::cmp::Ordering::Less,
+                        Ok(Value::Number(n)) if n > rust_decimal::Decimal::ZERO => std::cmp::Ordering::Greater,
+                        Ok(Value::Number(_)) => std::cmp::Ordering::Equal,
+                        Ok(Value::Bool(true))  => std::cmp::Ordering::Greater,
+                        Ok(Value::Bool(false)) => std::cmp::Ordering::Less,
+                        Ok(otro) => {
+                            err = Some(CaperError::TypeError {
+                                line,
+                                detail: format!(
+                                    "sort_by comparator must return a number or a boolean, got {}",
+                                    otro.type_name()
+                                ),
+                            });
+                            std::cmp::Ordering::Equal
+                        }
                         Err(e) => { err = Some(e); std::cmp::Ordering::Equal }
                     }
                 });

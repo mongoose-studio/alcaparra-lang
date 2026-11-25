@@ -9,6 +9,7 @@
 //! Esto permite el manejo de excepciones entre llamadas de forma correcta.
 
 use crate::error::CaperError;
+use crate::limits::Limits;
 use crate::instruction::{CompiledProgram, Instruction};
 use crate::loader::ImportLoader;
 use crate::parser::ast::UseItems;
@@ -93,6 +94,7 @@ pub struct Executor {
     loader:     Rc<RefCell<ImportLoader>>,
     plugins:    Rc<RefCell<PluginRegistry>>,
     loop_iters: usize,
+    limits:     Limits,
 }
 
 impl Executor {
@@ -117,6 +119,7 @@ impl Executor {
             iter_stack: Vec::new(),
             obj_stack:  Vec::new(),
             ex_stack:   Vec::new(),
+            limits:     Limits::DEFAULT,
             scope:      ScopeStack::new(context),
             loader,
             plugins,
@@ -129,6 +132,33 @@ impl Executor {
     // -----------------------------------------------------------------------
 
     fn push(&mut self, v: Value) { self.stack.push(v); }
+
+    /// Cambia los topes de forma con los que corre este ejecutor.
+    ///
+    /// Existe como setter y no como parámetro del constructor para no romper a
+    /// quien ya construye un `Executor`: los topes por omisión son los seguros.
+    pub fn set_limits(&mut self, limits: Limits) { self.limits = limits; }
+
+    /// Empuja un valor **recién armado**, comprobando que no haya quedado más
+    /// hondo de lo que el motor puede recorrer.
+    ///
+    /// Los topes del parser y del compilador acotan lo que un script puede
+    /// *escribir*, pero no lo que puede *construir*: `x = [x];` dentro de un
+    /// `while` gana un nivel por vuelta, y con el tope de ciclos en 100.000 llega
+    /// mucho más lejos de lo que aguanta cualquier pila. Y un valor demasiado
+    /// hondo no falla cuando se usa: falla cuando se **suelta**, porque el `Drop`
+    /// de `Value` es recursivo, y eso es un `SIGABRT` sin error que devolver.
+    fn push_built(&mut self, v: Value) -> Result<(), CaperError> {
+        if let Err(depth) = crate::limits::check_value_depth(&v, self.limits.max_value_depth) {
+            return Err(CaperError::NestingTooDeep {
+                line: 0,
+                depth,
+                limit: self.limits.max_value_depth,
+            });
+        }
+        self.stack.push(v);
+        Ok(())
+    }
 
     fn pop(&mut self) -> Value {
         self.stack.pop().expect("executor: pop on empty stack")
@@ -247,7 +277,7 @@ impl Executor {
                 let value = self.pop();
                 let obj   = self.pop();
                 match obj {
-                    Value::Object(mut m) => { m.insert(field, value); self.push(Value::Object(m)); }
+                    Value::Object(mut m) => { m.insert(field, value); self.push_built(Value::Object(m))?; }
                     other => return Err(CaperError::TypeError {
                         line,
                         detail: format!("cannot set field on {}", other.type_name()),
@@ -268,11 +298,11 @@ impl Executor {
                     (Value::Array(mut a), Value::Number(n)) => {
                         let i = to_usize_index(n, a.len(), line)?;
                         a[i] = value;
-                        self.push(Value::Array(a));
+                        self.push_built(Value::Array(a))?;
                     }
                     (Value::Object(mut m), Value::Str(k)) => {
                         m.insert(k, value);
-                        self.push(Value::Object(m));
+                        self.push_built(Value::Object(m))?;
                     }
                     (other, _) => return Err(CaperError::TypeError {
                         line,
@@ -306,14 +336,14 @@ impl Executor {
             Instruction::MakeArray(n) => {
                 let mut items = vec![Value::Null; n];
                 for i in (0..n).rev() { items[i] = self.pop(); }
-                self.push(Value::Array(items));
+                self.push_built(Value::Array(items))?;
             }
             Instruction::ArraySpread => {
                 let spread = self.pop();
                 let base   = self.pop();
                 match (base, spread) {
-                    (Value::Array(mut a), Value::Array(b)) => { a.extend(b); self.push(Value::Array(a)); }
-                    (Value::Array(mut a), other)           => { a.push(other); self.push(Value::Array(a)); }
+                    (Value::Array(mut a), Value::Array(b)) => { a.extend(b); self.push_built(Value::Array(a))?; }
+                    (Value::Array(mut a), other)           => { a.push(other); self.push_built(Value::Array(a))?; }
                     (base, _)                              => self.push(base),
                 }
             }
@@ -331,7 +361,7 @@ impl Executor {
             }
             Instruction::ObjEnd => {
                 let m = self.obj_stack.pop().expect("ObjEnd: no builder");
-                self.push(Value::Object(m));
+                self.push_built(Value::Object(m))?;
             }
 
             // --- Control de flujo ---
@@ -835,40 +865,50 @@ impl Executor {
         }
         let fd  = Self::hof_require_fn(&args, 1, "sort_by")?;
         let mut indexed: Vec<(usize, Value)> = arr.into_iter().enumerate().collect();
-        let mut err: Option<CaperError> = None;
-        // No se puede llamar run_fn dentro del comparador de sort (problemas de borrow),
-        // por lo que se precomputan claves o se usa un wrapper.
-        // Enfoque simple: ejecutar sort_by mediante un sort estable con captura de errores.
-        let fdc = Rc::clone(&fd);
-        // ¿Recolectar claves de comparación? No — sort_by estándar espera comparador (a,b).
-        // Workaround sin unsafe: capturar errores via RefCell.
-        let err_cell = std::cell::RefCell::new(None::<CaperError>);
-        indexed.sort_by(|(_, a), (_, b)| {
-            if err_cell.borrow().is_some() { return std::cmp::Ordering::Equal; }
-            // Se necesita &mut self aquí, lo que conflictúa con el closure.
-            // Alternativa: ejecutar la función por separado vía manipulación de stack.
-            // Limitación conocida; por ahora retornar Equal y usar un pase separado.
-            let _ = (a, b, &fdc);
-            std::cmp::Ordering::Equal
-        });
-        // Ordenamiento real usando un pase comparador separado:
+
+        // `run_fn` necesita `&mut self`, que no se puede prestar dentro del comparador de
+        // `slice::sort_by`. Por eso el orden se arma con un intercambio explícito en vez de
+        // delegar en la biblioteca estándar.
         let n = indexed.len();
         for i in 0..n {
-            for j in (i+1)..n {
-                if err.is_some() { break; }
+            for j in (i + 1)..n {
                 let a = indexed[i].1.clone();
                 let b = indexed[j].1.clone();
-                match self.run_fn(Rc::clone(&fd), vec![a, b], line) {
-                    Ok(Value::Number(n)) if n > Decimal::ZERO => {
-                        indexed.swap(i, j);
-                    }
-                    Ok(_)  => {}
-                    Err(e) => { err = Some(e); break; }
+                if Self::comparator_wants_swap(self.run_fn(Rc::clone(&fd), vec![a, b], line)?, line)? {
+                    indexed.swap(i, j);
                 }
             }
         }
-        if let Some(e) = err { return Err(e); }
         Ok(Value::Array(indexed.into_iter().map(|(_, v)| v).collect()))
+    }
+
+    /// Qué significa lo que devolvió el comparador de `sort_by`.
+    ///
+    /// Se aceptan dos formas, y cualquier otra cosa es un error:
+    ///
+    /// - **Número**, al estilo de `cmp`: positivo significa «el primero va después».
+    /// - **Booleano**, que es lo que devuelve `|a, b| => a > b` — la forma que escribe
+    ///   cualquiera que venga de PHP o de JavaScript. Para un ordenamiento por
+    ///   intercambios, `true` = «intercambia» es exactamente la semántica correcta.
+    ///
+    /// Lo que **no** se acepta es callarse. Antes, cualquier valor que no fuera número
+    /// caía en un `Ok(_) => {}` y se trataba como «son iguales», así que un comparador
+    /// booleano devolvía el arreglo **sin ordenar y sin error**: un resultado incorrecto
+    /// en silencio, que es la peor clase de defecto que puede tener un motor de cálculo.
+    /// `null` también es un error, y a propósito: una función que se olvidó del `emit`
+    /// devuelve `null`, y ese olvido tiene que doler acá y no tres pantallas más allá.
+    fn comparator_wants_swap(v: Value, line: usize) -> Result<bool, CaperError> {
+        match v {
+            Value::Number(n) => Ok(n > Decimal::ZERO),
+            Value::Bool(b)   => Ok(b),
+            otro => Err(CaperError::TypeError {
+                line,
+                detail: format!(
+                    "sort_by comparator must return a number or a boolean, got {}",
+                    otro.type_name()
+                ),
+            }),
+        }
     }
 
     fn hof_find_index(&mut self, args: Vec<Value>, line: usize) -> Result<Value, CaperError> {

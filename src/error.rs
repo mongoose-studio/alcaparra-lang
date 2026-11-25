@@ -20,6 +20,12 @@ pub enum CaperError {
     #[error("Expected '{expected}' at {line}:{col}, found '{found}'")]
     UnexpectedToken { expected: String, found: String, line: usize, col: usize },
 
+    /// El programa anida o encadena más de lo que el motor puede recorrer sin
+    /// desbordar la pila. Ver `limits` — incluye el tope que se excedió para que
+    /// quien lo reciba sepa contra qué número está midiendo.
+    #[error("Nesting too deep at line {line}: {depth} levels, limit is {limit}")]
+    NestingTooDeep { line: usize, depth: usize, limit: usize },
+
     // --- Errores de runtime ---
     #[error("Undefined variable '{name}' at line {line}")]
     UndefinedVariable { name: String, line: usize },
@@ -86,6 +92,7 @@ impl CaperError {
             Self::UnterminatedString { .. }    => "UNTERMINATED_STRING",
             Self::SyntaxError { .. }           => "SYNTAX_ERROR",
             Self::UnexpectedToken { .. }       => "UNEXPECTED_TOKEN",
+            Self::NestingTooDeep { .. }        => "NESTING_TOO_DEEP",
             Self::UndefinedVariable { .. }     => "UNDEFINED_VARIABLE",
             Self::TypeError { .. }             => "TYPE_ERROR",
             Self::DivisionByZero { .. }        => "DIVISION_BY_ZERO",
@@ -115,6 +122,7 @@ impl CaperError {
             Self::UnterminatedString { line, col }  => Some((*line, *col)),
             Self::SyntaxError     { line, col, .. } => Some((*line, *col)),
             Self::UnexpectedToken { line, col, .. } => Some((*line, *col)),
+            Self::NestingTooDeep  { line, .. }      => Some((*line, 0)),
             Self::UndefinedVariable { line, .. }    => Some((*line, 0)),
             Self::TypeError         { line, .. }    => Some((*line, 0)),
             Self::DivisionByZero    { line }        => Some((*line, 0)),

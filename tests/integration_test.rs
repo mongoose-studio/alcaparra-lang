@@ -2662,3 +2662,211 @@ fn la_aritmetica_no_convierte_strings() {
     );
     assert_eq!(v, num(dec!(3700000)));
 }
+
+// ---------------------------------------------------------------------------
+// §11.9 — los dos motores tienen que negar igual
+// ---------------------------------------------------------------------------
+
+/// Corre el mismo programa por el intérprete de árbol (`vm::execute`), que no es
+/// el camino del CLI ni el del servicio, pero es público y por lo tanto es
+/// contrato: cualquiera puede llamarlo desde otro crate.
+fn run_in_tree(source: &str, context: HashMap<String, Value>) -> Result<Value, alcaparra::CaperError> {
+    let tokens  = alcaparra::lexer::tokenize(source)?;
+    let program = alcaparra::parser::parse(tokens)?;
+    let loader  = std::rc::Rc::new(std::cell::RefCell::new(
+        alcaparra::ImportLoader::new(PathBuf::from("."), HashMap::new()),
+    ));
+    alcaparra::vm::execute(program, context, loader)
+}
+
+#[test]
+fn unary_negation_agrees_across_both_engines() {
+    let source = "main { emit -S; }";
+    let c = ctx(&[("S", s("5"))]);
+
+    // La VM de bytecode exige un número desde el arreglo de la aritmética (§11.7).
+    let bytecode = run_ok(source, c.clone());
+    assert!(
+        matches!(bytecode, Err(alcaparra::CaperError::TypeError { .. })),
+        "bytecode VM must reject -\"5\", got {bytecode:?}"
+    );
+
+    // El intérprete de árbol lo convertía en -5 en silencio: ese era el §11.9.
+    let tree = run_in_tree(source, c);
+    assert!(
+        matches!(tree, Err(alcaparra::CaperError::TypeError { .. })),
+        "tree interpreter must reject -\"5\" just like the VM, got {tree:?}"
+    );
+}
+
+#[test]
+fn negating_a_number_still_works_in_both_engines() {
+    let source = "main { emit -N; }";
+    let c = ctx(&[("N", num(dec!(5)))]);
+
+    assert_eq!(run(source, c.clone()), num(dec!(-5)));
+    assert_eq!(
+        run_in_tree(source, c).expect("tree interpreter must negate a number"),
+        num(dec!(-5))
+    );
+}
+
+// ---------------------------------------------------------------------------
+// §11.12 — el comparador de sort_by no puede callarse
+// ---------------------------------------------------------------------------
+
+fn numbers_of(v: &Value) -> Vec<i64> {
+    use rust_decimal::prelude::ToPrimitive;
+    match v {
+        Value::Array(xs) => xs.iter().map(|x| match x {
+            Value::Number(n) => n.to_i64().expect("integer"),
+            other => panic!("expected a number, got {other:?}"),
+        }).collect(),
+        other => panic!("expected an array, got {other:?}"),
+    }
+}
+
+#[test]
+fn sort_by_with_numeric_comparator_sorts_in_both_engines() {
+    let source = "main { emit sort_by([30, 10, 20], |a, b| => a - b); }";
+    assert_eq!(numbers_of(&run(source, ctx(&[]))), vec![10, 20, 30]);
+    assert_eq!(
+        numbers_of(&run_in_tree(source, ctx(&[])).expect("tree interpreter must sort")),
+        vec![10, 20, 30]
+    );
+}
+
+/// El defecto de §11.12: `|a, b| => a > b` es lo que escribe cualquiera que venga de
+/// PHP, y la VM de bytecode devolvía el arreglo **sin ordenar y sin error**.
+#[test]
+fn sort_by_with_boolean_comparator_sorts_in_both_engines() {
+    let source = "main { emit sort_by([30, 10, 20], |a, b| => a > b); }";
+    assert_eq!(
+        numbers_of(&run(source, ctx(&[]))),
+        vec![10, 20, 30],
+        "a boolean comparator must sort, not return the input order"
+    );
+    assert_eq!(
+        numbers_of(&run_in_tree(source, ctx(&[])).expect("tree interpreter must sort")),
+        vec![10, 20, 30]
+    );
+}
+
+#[test]
+fn sort_by_rejects_non_comparator_returns_in_both_engines() {
+    // Un string nunca fue un comparador; antes se tragaba como «son iguales».
+    // `null` es el caso que importa: es lo que devuelve una función sin `emit`.
+    for body in [r#"|a, b| => "1""#, "|a, b| => null"] {
+        let source = format!("main {{ emit sort_by([30, 10, 20], {body}); }}");
+
+        let bytecode = run_ok(&source, ctx(&[]));
+        assert!(
+            matches!(bytecode, Err(alcaparra::CaperError::TypeError { .. })),
+            "bytecode VM must reject `{body}` as a comparator, got {bytecode:?}"
+        );
+
+        let tree = run_in_tree(&source, ctx(&[]));
+        assert!(
+            matches!(tree, Err(alcaparra::CaperError::TypeError { .. })),
+            "tree interpreter must reject `{body}` as a comparator, got {tree:?}"
+        );
+    }
+}
+
+#[test]
+fn sort_by_with_field_name_still_works() {
+    use rust_decimal::prelude::ToPrimitive;
+    let v = run(
+        r#"main { emit sort_by([{ m: 30 }, { m: 10 }, { m: 20 }], "m"); }"#,
+        ctx(&[]),
+    );
+    match v {
+        Value::Array(xs) => {
+            let amounts: Vec<i64> = xs.iter().map(|o| match o {
+                Value::Object(m) => match m.get("m") {
+                    Some(Value::Number(n)) => n.to_i64().expect("integer"),
+                    other => panic!("unexpected field m: {other:?}"),
+                },
+                other => panic!("expected an object, got {other:?}"),
+            }).collect();
+            assert_eq!(amounts, vec![10, 20, 30]);
+        }
+        other => panic!("expected an array, got {other:?}"),
+    }
+}
+
+// ---------------------------------------------------------------------------
+// §11.10 / mejora 8 — topes de forma: un error en vez de un SIGABRT
+// ---------------------------------------------------------------------------
+
+fn nesting_error(r: &Result<Value, alcaparra::CaperError>) -> bool {
+    matches!(r, Err(alcaparra::CaperError::NestingTooDeep { .. }))
+}
+
+#[test]
+fn deeply_nested_literals_are_rejected_instead_of_aborting() {
+    let source = format!("main {{ emit {}1{}; }}", "[".repeat(500), "]".repeat(500));
+    let r = run_ok(&source, ctx(&[]));
+    assert!(nesting_error(&r), "500 levels of nesting must be an error, got {r:?}");
+}
+
+/// El parser arma `a + b + c + …` iterativamente, así que su tope no la ve: el que
+/// baja un marco por término es el compilador, y tiene su propio tope.
+#[test]
+fn a_long_operator_chain_is_rejected_instead_of_aborting() {
+    let source = format!("main {{ emit {}; }}", vec!["1"; 20_000].join(" + "));
+    let r = run_ok(&source, ctx(&[]));
+    assert!(nesting_error(&r), "a 20000-term chain must be an error, got {r:?}");
+}
+
+/// Lo que ningún tope de texto puede ver: la profundidad se gana en tiempo de
+/// ejecución, una vuelta de ciclo por nivel.
+#[test]
+fn building_depth_in_a_loop_is_rejected_instead_of_aborting() {
+    let source = "main { var x = [1]; var i = 0; \
+                  while (i < 3000) { x = [x]; i = i + 1; } emit x; }";
+    let r = run_ok(source, ctx(&[]));
+    assert!(nesting_error(&r), "depth built in a loop must be an error, got {r:?}");
+}
+
+#[test]
+fn an_ordinary_script_is_not_affected_by_the_limits() {
+    // Diez niveles de anidamiento y veinte términos encadenados: más de lo que
+    // tiene cualquier fórmula real, y muy por debajo de los topes.
+    let source = format!(
+        "main {{ let a = {}1{}; emit {} ; }}",
+        "[".repeat(10), "]".repeat(10), vec!["2"; 20].join(" * ")
+    );
+    let v = run(&source, ctx(&[]));
+    assert_eq!(v, num(dec!(1048576)));
+}
+
+/// Los topes son configurables porque el número seguro depende de la pila del
+/// hilo, y el motor no la conoce.
+///
+/// La prueba los **baja** y no los sube, y eso no es comodidad: esta prueba corre
+/// en un hilo de 2 MiB compilado en `debug`, donde el techo real del parser está
+/// en 105 niveles. Subir el tope a 256 y meterle 100 niveles aborta el proceso —
+/// se probó—, que es exactamente el motivo de que el valor por omisión sea 64 y de
+/// que subirlo sea una decisión del empotrador y no del motor.
+#[test]
+fn the_limits_are_configurable_by_the_embedder() {
+    use alcaparra::limits::Limits;
+
+    let source = format!("main {{ emit {}1{}; }}", "[".repeat(10), "]".repeat(10));
+    let tokens = alcaparra::lexer::tokenize(&source).expect("lexer");
+
+    // Diez niveles caben de sobra en los topes por omisión.
+    assert!(
+        alcaparra::parser::parse_with_limits(tokens.clone(), Limits::DEFAULT).is_ok(),
+        "10 levels must fit within the default limit"
+    );
+
+    // Y un empotrador con menos pila puede apretarlos.
+    let tightened = Limits { max_nesting_depth: 8, ..Limits::DEFAULT };
+    let r = alcaparra::parser::parse_with_limits(tokens, tightened);
+    assert!(
+        matches!(r, Err(alcaparra::CaperError::NestingTooDeep { depth: 9, limit: 8, .. })),
+        "10 levels must exceed a limit of 8, got {r:?}"
+    );
+}

@@ -26,21 +26,84 @@ pub mod ast;
 
 use crate::error::CaperError;
 use crate::lexer::{Spanned, Token};
+use crate::limits::Limits;
 use ast::*;
 
+/// Parsea con los topes de forma por omisión. Ver `limits`.
 pub fn parse(tokens: Vec<Spanned>) -> Result<Program, CaperError> {
-    let mut parser = Parser::new(tokens);
+    parse_with_limits(tokens, Limits::DEFAULT)
+}
+
+/// Parsea con topes explícitos.
+///
+/// Un empotrador que le da más pila a su hilo puede subirlos; uno que corre en el
+/// hilo de una prueba, no. Ver la tabla de medición en `limits`.
+pub fn parse_with_limits(tokens: Vec<Spanned>, limits: Limits) -> Result<Program, CaperError> {
+    let mut parser = Parser::new(tokens, limits);
     parser.parse_program()
 }
 
 struct Parser {
     tokens: Vec<Spanned>,
     pos: usize,
+    /// Profundidad de recursión actual del descenso recursivo. Sube al entrar a una
+    /// expresión o a una sentencia y baja al salir, pase lo que pase.
+    depth: usize,
+    /// Operadores binarios plegados dentro de la expresión que se está armando.
+    /// Se reinicia al entrar a la expresión más externa.
+    binop_folds: usize,
+    limits: Limits,
 }
 
 impl Parser {
-    fn new(tokens: Vec<Spanned>) -> Self {
-        Self { tokens, pos: 0 }
+    fn new(tokens: Vec<Spanned>, limits: Limits) -> Self {
+        Self { tokens, pos: 0, depth: 0, binop_folds: 0, limits }
+    }
+
+    /// Entra un nivel de recursión, o falla si ya no queda margen de pila.
+    ///
+    /// Se cuenta acá y no contando corchetes porque acá el número es **exacto**:
+    /// es literalmente cuántos marcos de pila lleva puestos el parser. Contar
+    /// tokens antes de parsear sólo puede aproximar.
+    fn enter(&mut self, line: usize) -> Result<(), CaperError> {
+        self.depth += 1;
+        if self.depth == 1 {
+            self.binop_folds = 0;
+        }
+        if self.depth > self.limits.max_nesting_depth {
+            return Err(CaperError::NestingTooDeep {
+                line,
+                depth: self.depth,
+                limit: self.limits.max_nesting_depth,
+            });
+        }
+        Ok(())
+    }
+
+    fn leave(&mut self) {
+        self.depth -= 1;
+    }
+
+    /// Pliega un operador binario más sobre la izquierda, o falla si la cadena ya
+    /// es más larga de lo que el motor puede recorrer.
+    ///
+    /// **Se cuenta acá y no en el compilador**, aunque el que desborda la pila sea
+    /// el compilador. El motivo es que el parser arma `a + b + c + …`
+    /// iterativamente y sin costo, pero el árbol que resulta tiene un brazo
+    /// izquierdo tan profundo como términos tenga la cadena — y ese árbol, cuando
+    /// se destruye, **también se recorre recursivamente**. Rechazar en el
+    /// compilador llegaba tarde: devolvía el error y después abortaba soltando el
+    /// AST. Acá el árbol hondo nunca llega a existir.
+    fn fold(&mut self, line: usize) -> Result<(), CaperError> {
+        self.binop_folds += 1;
+        if self.binop_folds > self.limits.max_operator_chain {
+            return Err(CaperError::NestingTooDeep {
+                line,
+                depth: self.binop_folds,
+                limit: self.limits.max_operator_chain,
+            });
+        }
+        Ok(())
     }
 
     // --- Helpers de tokens ---
@@ -190,7 +253,13 @@ impl Parser {
     // --- Sentencias ---
 
     fn parse_stmt(&mut self) -> Result<Stmt, CaperError> {
-        self.parse_stmt_inner(false)
+        // Las sentencias también anidan: un `if` dentro de un `if` dentro de un
+        // `foreach` baja un marco por nivel igual que `[[[…]]]`.
+        let line = self.peek_line();
+        self.enter(line)?;
+        let r = self.parse_stmt_inner(false);
+        self.leave();
+        r
     }
 
     /// `allow_tail` habilita la **expresión final** de un bloque con valor: la
@@ -470,7 +539,11 @@ impl Parser {
     // --- Expresiones (Pratt parser por precedencia) ---
 
     fn parse_expr(&mut self) -> Result<Expr, CaperError> {
-        self.parse_null_coalesce()
+        let line = self.peek_line();
+        self.enter(line)?;
+        let r = self.parse_null_coalesce();
+        self.leave();
+        r
     }
 
     fn parse_null_coalesce(&mut self) -> Result<Expr, CaperError> {
@@ -490,6 +563,7 @@ impl Parser {
         while self.at(&Token::Or) {
             self.advance();
             let right = self.parse_and()?;
+            self.fold(line)?;
             left = Expr::BinOp { op: BinOp::Or, left: Box::new(left), right: Box::new(right), line };
         }
         Ok(left)
@@ -501,6 +575,7 @@ impl Parser {
         while self.at(&Token::And) {
             self.advance();
             let right = self.parse_equality()?;
+            self.fold(line)?;
             left = Expr::BinOp { op: BinOp::And, left: Box::new(left), right: Box::new(right), line };
         }
         Ok(left)
@@ -517,6 +592,7 @@ impl Parser {
             };
             self.advance();
             let right = self.parse_comparison()?;
+            self.fold(line)?;
             left = Expr::BinOp { op, left: Box::new(left), right: Box::new(right), line };
         }
         Ok(left)
@@ -535,6 +611,7 @@ impl Parser {
             };
             self.advance();
             let right = self.parse_additive()?;
+            self.fold(line)?;
             left = Expr::BinOp { op, left: Box::new(left), right: Box::new(right), line };
         }
         Ok(left)
@@ -551,6 +628,7 @@ impl Parser {
             };
             self.advance();
             let right = self.parse_multiplicative()?;
+            self.fold(line)?;
             left = Expr::BinOp { op, left: Box::new(left), right: Box::new(right), line };
         }
         Ok(left)
@@ -568,6 +646,7 @@ impl Parser {
             };
             self.advance();
             let right = self.parse_power()?;
+            self.fold(line)?;
             left = Expr::BinOp { op, left: Box::new(left), right: Box::new(right), line };
         }
         Ok(left)
@@ -578,6 +657,7 @@ impl Parser {
         let base = self.parse_unary()?;
         if self.at(&Token::StarStar) {
             self.advance();
+            self.fold(line)?;
             let exp = self.parse_power()?; // asociativo por la derecha
             return Ok(Expr::BinOp { op: BinOp::Pow, left: Box::new(base), right: Box::new(exp), line });
         }

@@ -8,6 +8,7 @@
 //! `chunks[0]` es siempre el cuerpo del script de nivel raíz.
 //! Los cuerpos de funciones/closures obtienen su propio chunk (añadido a `program.chunks`).
 
+use crate::limits::Limits;
 use crate::error::CaperError;
 use crate::instruction::{Chunk, CompiledProgram, Instruction};
 use crate::parser::ast::*;
@@ -17,8 +18,17 @@ use crate::vm::value::Value;
 // Punto de entrada público
 // ---------------------------------------------------------------------------
 
+/// Compila con los topes de forma por omisión. Ver `limits`.
 pub fn compile(program: Program) -> Result<CompiledProgram, CaperError> {
-    let mut c = Compiler::new();
+    compile_with_limits(program, Limits::DEFAULT)
+}
+
+/// Compila con topes explícitos. El que importa acá es `max_operator_chain`.
+pub fn compile_with_limits(
+    program: Program,
+    limits: Limits,
+) -> Result<CompiledProgram, CaperError> {
+    let mut c = Compiler::new(limits);
     c.compile_program(program)?;
     Ok(c.program)
 }
@@ -48,16 +58,23 @@ struct Compiler {
     program:     CompiledProgram,
     chunk_idx:   usize,          // índice del chunk en compilación
     loop_stack:  Vec<LoopContext>,
+    /// Marcos de pila que lleva puestos el recorrido de operadores binarios. El
+    /// parser arma `a + b + c + …` iterativamente, así que su tope no la ve: acá
+    /// la cadena cuesta un marco por término. Ver `limits`.
+    binop_depth: usize,
+    limits:      Limits,
 }
 
 impl Compiler {
-    fn new() -> Self {
+    fn new(limits: Limits) -> Self {
         // Pre-asignar chunk 0 para el cuerpo de nivel raíz
         let main_chunk = Chunk::new(None, vec![]);
         Self {
             program: CompiledProgram { chunks: vec![main_chunk] },
             chunk_idx: 0,
             loop_stack: vec![],
+            binop_depth: 0,
+            limits,
         }
     }
 
@@ -548,6 +565,28 @@ impl Compiler {
     // -----------------------------------------------------------------------
 
     fn compile_binop(
+        &mut self,
+        op: &BinOp,
+        left: &Expr,
+        right: &Expr,
+        line: usize,
+    ) -> Result<(), CaperError> {
+        self.binop_depth += 1;
+        if self.binop_depth > self.limits.max_operator_chain {
+            let depth = self.binop_depth;
+            self.binop_depth -= 1;
+            return Err(CaperError::NestingTooDeep {
+                line,
+                depth,
+                limit: self.limits.max_operator_chain,
+            });
+        }
+        let r = self.compile_binop_inner(op, left, right, line);
+        self.binop_depth -= 1;
+        r
+    }
+
+    fn compile_binop_inner(
         &mut self,
         op: &BinOp,
         left: &Expr,

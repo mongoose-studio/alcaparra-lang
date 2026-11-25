@@ -35,6 +35,7 @@ pub mod formatter;
 pub mod global_config;
 pub mod instruction;
 pub mod lexer;
+pub mod limits;
 pub mod loader;
 pub mod package;
 pub mod parser;
